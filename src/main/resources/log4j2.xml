@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="ERROR">
+    <Appenders>
+        <RollingRandomAccessFile name="FileLogger" fileName="logs/latest.log"
+                                 filePattern="logs/$${date:MM-yyyy}/app-%d{dd-MM-yyyy}-%i.log.gz">
+            <PatternLayout pattern="[%d{dd-MM-yyyy HH:mm:ss}] %level %logger - %msg%n" charset="866"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <!-- avoid duplicated logs with additivity=false -->
+        <Logger name="me.theentropyshard.sheet" level="debug" additivity="false">
+            <AppenderRef ref="FileLogger"/>
+        </Logger>
+
+        <Root/>
+    </Loggers>
+</Configuration>
