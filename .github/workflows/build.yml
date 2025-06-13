@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '17'
-          distribution: 'temurin'
+          distribution: 'adopt'
 
       - name: Build with Gradle
         run: ./gradlew clean createDistributable
@@ -28,5 +28,5 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Sheet-debug-${{ matrix.os }}.zip
+          name: Sheet-debug-${{ matrix.os }}
           path: build/compose/binaries/main/app
