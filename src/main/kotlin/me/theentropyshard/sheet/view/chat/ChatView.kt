@@ -66,5 +66,7 @@ fun ChatView(
         ) {
             onSendMessage(it)
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }

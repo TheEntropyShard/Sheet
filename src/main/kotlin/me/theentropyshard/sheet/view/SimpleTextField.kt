@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -72,7 +73,8 @@ fun SimpleTextField(
 ) {
     BasicTextField(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surface, shape = shape),
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surface),
         value = value,
         onValueChange = onValueChange,
         singleLine = singleLine,
