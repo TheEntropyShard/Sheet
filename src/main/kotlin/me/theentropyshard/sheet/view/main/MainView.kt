@@ -73,7 +73,13 @@ fun MainView(
 
             GuildList(
                 modifier = Modifier.fillMaxHeight(),
-                guilds = guilds
+                guilds = guilds,
+                onMeClick = {
+
+                },
+                onAddGuildClick = {
+
+                }
             ) {
                 model.selectGuild(it)
             }

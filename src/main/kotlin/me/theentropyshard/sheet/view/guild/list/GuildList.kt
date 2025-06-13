@@ -19,9 +19,21 @@
 package me.theentropyshard.sheet.view.guild.list
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.theentropyshard.sheet.api.model.PublicGuild
@@ -30,14 +42,58 @@ import me.theentropyshard.sheet.api.model.PublicGuild
 fun GuildList(
     modifier: Modifier = Modifier,
     guilds: List<PublicGuild>,
-    onClick: (String) -> Unit
+    onMeClick: () -> Unit,
+    onAddGuildClick: () -> Unit,
+    onClick: (String) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(guilds) {
-            GuildItem(guildName = it.name) { onClick(it.id) }
+        item {
+            GuildItem(onClick = {}) {
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = ""
+                )
+            }
         }
+
+        item {
+            Divider()
+        }
+
+        items(guilds) {
+            GuildItem(onClick = { onClick(it.id) }) {
+                Text(text = "${it.name[0]}")
+            }
+        }
+
+        item {
+            Divider()
+        }
+
+        item {
+            GuildItem(onClick = {}) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = ""
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun Divider() {
+    Box(
+        modifier = Modifier.width(56.dp).fillMaxHeight(),
+        contentAlignment = Alignment.Center
+    ) {
+        HorizontalDivider(
+            modifier = Modifier.width(40.dp),
+            thickness = 2.dp,
+            color = MaterialTheme.colorScheme.surfaceContainer
+        )
     }
 }
