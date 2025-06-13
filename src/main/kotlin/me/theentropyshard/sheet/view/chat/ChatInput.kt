@@ -20,6 +20,7 @@ package me.theentropyshard.sheet.view.chat
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
@@ -32,6 +33,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import me.theentropyshard.sheet.view.SimpleTextField
 
+val minHeight = 48.dp
+val maxHeight = (48 * 5).dp
+
 @Composable
 fun ChatInput(
     modifier: Modifier = Modifier,
@@ -40,13 +44,16 @@ fun ChatInput(
     var textState by remember { mutableStateOf(TextFieldValue("")) }
     var isShifting by remember { mutableStateOf(false) }
 
+    var height by remember { mutableStateOf(minHeight) }
+
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         SimpleTextField(
             modifier = Modifier
-                .height(48.dp)
+                .heightIn(min = minHeight, max = maxHeight)
+                .height(height)
                 .weight(1f)
                 .onPreviewKeyEvent { event ->
                     when (event.key) {
@@ -62,23 +69,25 @@ fun ChatInput(
                             }
 
                             if (!isShifting && event.type == KeyEventType.KeyUp) {
-                                val text = textState.text
+                                onSendMessage(textState.text)
                                 textState = TextFieldValue("")
-                                onSendMessage(text)
 
                                 true
                             } else if (isShifting && event.type == KeyEventType.KeyUp) {
-                                textState = TextFieldValue(text = buildString {
-                                    if (textState.selection.collapsed) {
-                                        append(textState.text, 0, textState.selection.start)
-                                        append('\n')
-                                        append(textState.text, textState.selection.start, textState.text.length)
-                                    } else {
-                                        append(textState.text, 0, textState.selection.min)
-                                        append('\n')
-                                        append(textState.text, textState.selection.max, textState.text.length)
-                                    }
-                                }, selection = TextRange(textState.selection.min + 1))
+                                textState = TextFieldValue(
+                                    text = buildString {
+                                        if (textState.selection.collapsed) {
+                                            append(textState.text, 0, textState.selection.start)
+                                            append('\n')
+                                            append(textState.text, textState.selection.start, textState.text.length)
+                                        } else {
+                                            append(textState.text, 0, textState.selection.min)
+                                            append('\n')
+                                            append(textState.text, textState.selection.max, textState.text.length)
+                                        }
+                                    },
+                                    selection = TextRange(textState.selection.min + 1)
+                                )
 
                                 true
                             } else {
@@ -89,6 +98,7 @@ fun ChatInput(
                         else -> false
                     }
                 },
+            onTextLayout = { result -> height = result.size.height.dp + (result.lineCount * 8).dp },
             value = textState,
             onValueChange = { textState = it },
             placeholder = { Text("Send a message...") },
