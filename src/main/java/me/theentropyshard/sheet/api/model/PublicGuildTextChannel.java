@@ -30,4 +30,14 @@ public class PublicGuildTextChannel {
     public String completeId() {
         return this.id + "@" + this.domain;
     }
+
+    @Override
+    public String toString() {
+        return "PublicGuildTextChannel{" +
+            "id='" + this.id + '\'' +
+            ", name='" + this.name + '\'' +
+            ", domain='" + this.domain + '\'' +
+            ", guildId='" + this.guildId + '\'' +
+            '}';
+    }
 }

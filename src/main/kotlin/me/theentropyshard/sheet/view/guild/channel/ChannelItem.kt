@@ -29,6 +29,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
@@ -37,14 +41,27 @@ import androidx.compose.ui.unit.dp
 fun ChannelItem(
     modifier: Modifier = Modifier,
     name: String,
+    selected: Boolean,
     onClick: () -> Unit
 ) {
+    val scheme = MaterialTheme.colorScheme
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surface)
             .fillMaxWidth()
             .pointerHoverIcon(icon = PointerIcon.Hand)
+            .drawBehind {
+                if (selected) {
+                    drawRoundRect(
+                        color = scheme.secondaryContainer,
+                        topLeft = Offset(3.dp.toPx(), 3.dp.toPx()),
+                        size = Size(size.width - 6.dp.toPx(), size.height - 6.dp.toPx()),
+                        cornerRadius = CornerRadius(6.dp.toPx(), 6.dp.toPx()),
+                    )
+                }
+            }
             .clickable { onClick() },
         contentAlignment = Alignment.CenterStart
     ) {

@@ -22,23 +22,43 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
 import me.theentropyshard.sheet.view.chat.ChatView
 import me.theentropyshard.sheet.view.guild.channel.ChannelList
+import me.theentropyshard.sheet.view.guild.dialog.CreateChannelDialog
 import me.theentropyshard.sheet.view.guild.list.GuildList
 import me.theentropyshard.sheet.view.guild.members.MemberList
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainView(
     modifier: Modifier = Modifier,
@@ -57,11 +77,23 @@ fun MainView(
         model.loadGuilds()
     }
 
+    var dialogVisible by remember { mutableStateOf(false) }
+
     LaunchedEffect(messages) {
         scope.launch {
             if (messages.isNotEmpty()) {
                 state.animateScrollToItem(messages.size - 1)
             }
+        }
+    }
+
+    currentCompositionLocalContext
+
+    if (dialogVisible) {
+        CreateChannelDialog(
+            onDismissRequest = { dialogVisible = false }
+        ) { name ->
+            model.createChannel(name)
         }
     }
 
@@ -86,21 +118,32 @@ fun MainView(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            ChannelList(
-                modifier = Modifier.fillMaxHeight().width(200.dp),
-                channels = currentGuild!!.channels
-            ) {
-                model.selectChannel(it)
+            key(currentGuild, currentChannel) {
+                ChannelList(
+                    modifier = Modifier.fillMaxHeight().width(200.dp),
+                    channels = currentGuild!!.channels,
+                    guildName = currentGuild!!.name,
+                    isChannelSelected = { channel ->
+                        channel.id == currentChannel?.id
+                    },
+                    onCreateChannelClick = {
+                        dialogVisible = true
+                    }
+                ) {
+                    model.selectChannel(it)
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            ChatView(
-                modifier = Modifier.fillMaxSize().weight(1f),
-                state = state,
-                messages = messages.filter { message -> message.channelId == currentChannel?.completeId() }.reversed()
-            ) { message ->
-                model.sendMessage(message)
+            key(currentChannel) {
+                ChatView(
+                    modifier = Modifier.fillMaxSize().weight(1f),
+                    state = state,
+                    messages = messages.filter { message -> message.channelId == currentChannel?.completeId() }.reversed()
+                ) { message ->
+                    model.sendMessage(message)
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))

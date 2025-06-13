@@ -181,14 +181,14 @@ class MainViewModel : ViewModel() {
         for (channel in _currentGuild.value!!.channels) {
             if (channel.id == id) {
                 _currentChannel.value = channel
-                loadMessages("$id@${channel.domain}")
+                loadMessages("$id@${channel.domain}", false)
 
                 break
             }
         }
     }
 
-    fun loadMessages(channelId: String) {
+    fun loadMessages(channelId: String, add: Boolean = true) {
         viewModelScope.launch(Dispatchers.IO) {
             val request = Request.Builder()
                 .url("${instance}/channel/$channelId/messages")
@@ -207,7 +207,37 @@ class MainViewModel : ViewModel() {
                     )
 
                     viewModelScope.launch {
-                        _messages.update { list -> messages + list }
+                        _messages.update { list -> if (add) messages + list else messages }
+                    }
+                }
+            })
+        }
+    }
+
+    fun createChannel(name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val data = JsonObject()
+            data.addProperty("name", name)
+
+            val request = Request.Builder()
+                .url("${instance}/guild/${_currentGuild.value?.id}@${_currentGuild.value?.domain}/channel")
+                .header("Authorization", "Bearer $token")
+                .post(data.toRequestBody())
+                .build()
+
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    e.printStackTrace()
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val code = response.code
+
+                    if (code == 200) {
+                        val json = response.body!!.string()
+                        val channel = gson.fromJson(json, PublicGuildTextChannel::class.java)
+                        _currentGuild.value!!.channels.add(channel)
+                        _currentChannel.update { channel }
                     }
                 }
             })
