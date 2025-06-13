@@ -1,0 +1,32 @@
+name: Build and Upload Debug Zip
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Build with Gradle
+        run: ./gradlew clean createDebugZip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: debug-zip-${{ matrix.os }}
+          path: build/distributions/*.zip
