@@ -69,6 +69,8 @@ fun MainView(
         CircularProgressIndicator()
     } else {
         Row(modifier = modifier) {
+            Spacer(modifier = Modifier.width(16.dp))
+
             GuildList(
                 modifier = Modifier.fillMaxHeight(),
                 guilds = guilds
@@ -101,6 +103,8 @@ fun MainView(
                 modifier = Modifier.fillMaxHeight().width(200.dp),
                 members = listOf("darkcat09", "doesnm", "theentropyshard")
             )
+
+            Spacer(modifier = Modifier.width(16.dp))
         }
     }
 }

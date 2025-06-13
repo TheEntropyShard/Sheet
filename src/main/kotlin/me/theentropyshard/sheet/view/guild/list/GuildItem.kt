@@ -41,7 +41,7 @@ fun GuildItem(
 ) {
     Box(
         modifier = modifier
-            .size(64.dp)
+            .size(56.dp)
             .clip(RoundedCornerShape(50))
             .background(MaterialTheme.colorScheme.surface)
             .pointerHoverIcon(icon = PointerIcon.Hand)

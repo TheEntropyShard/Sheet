@@ -124,6 +124,7 @@ fun main() = application {
 
     Window(
         state = state,
+        title = "Sheet",
         onCloseRequest = ::exitApplication
     ) {
         Sheet()
