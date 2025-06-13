@@ -18,6 +18,13 @@ repositories {
     google()
 }
 
+tasks.create("createDebugZip", Zip::class) {
+    dependsOn("createDistributable")
+    from(projectDir.resolve("build/compose/binaries/main/app"))
+    archiveBaseName = "Sheet"
+    archiveVersion = theVersion
+}
+
 dependencies {
     implementation(compose.desktop.currentOs)
     implementation(compose.material3)
