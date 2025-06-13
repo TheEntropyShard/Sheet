@@ -18,6 +18,7 @@
 
 package me.theentropyshard.sheet.view.chat
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,6 +40,8 @@ import java.time.format.DateTimeFormatter
 
 private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss")
 
+private val pingColor = Color(0xFFFAD6A5)
+
 @Composable
 fun ChatMessage(
     modifier: Modifier = Modifier,
@@ -45,7 +49,9 @@ fun ChatMessage(
     date: String,
     content: String
 ) {
-    Row(modifier = modifier) {
+    val authorName = author.split("@")[0]
+
+    Row(modifier = if (content.startsWith("$authorName: ")) modifier.background(pingColor) else modifier) {
         Icon(
             imageVector = Icons.Filled.Person,
             contentDescription = ""
@@ -59,7 +65,7 @@ fun ChatMessage(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = author.split("@")[0],
+                    text = authorName,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp
                 )
