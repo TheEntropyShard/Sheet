@@ -102,6 +102,22 @@ class MainViewModel : ViewModel() {
 
                         _messages.update { list -> listOf(shootMessage) + list }
                     }
+
+                    "RELATIONSHIP_CREATE" -> {
+
+                    }
+
+                    "GUILD_CREATE" -> {
+
+                    }
+
+                    "CHANNEL_CREATE" -> {
+                        val channel =
+                            gson.fromJson(message["d"].asJsonObject["channel"], PublicGuildTextChannel::class.java)
+
+                        _currentGuild.value!!.channels.add(channel)
+                        _currentChannel.update { channel }
+                    }
                 }
             }
 
@@ -231,14 +247,7 @@ class MainViewModel : ViewModel() {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    val code = response.code
-
-                    if (code == 200) {
-                        val json = response.body!!.string()
-                        val channel = gson.fromJson(json, PublicGuildTextChannel::class.java)
-                        _currentGuild.value!!.channels.add(channel)
-                        _currentChannel.update { channel }
-                    }
+                    response.use {  }
                 }
             })
         }
