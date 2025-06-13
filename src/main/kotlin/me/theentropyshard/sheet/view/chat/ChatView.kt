@@ -22,11 +22,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,18 +46,24 @@ fun ChatView(
     onSendMessage: (String) -> Unit
 ) {
     Column(modifier = modifier) {
-        LazyColumn(
-            modifier = Modifier.fillMaxHeight().weight(1f),
-            state = state,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        SelectionContainer(
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(1f)
         ) {
-            items(messages) {
-                ChatMessage(
-                    modifier = Modifier.fillMaxWidth(),
-                    author = it.authorId,
-                    date = it.published,
-                    content = it.content
-                )
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = state,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(messages) {
+                    ChatMessage(
+                        modifier = Modifier.fillMaxWidth(),
+                        author = it.authorId,
+                        date = it.published,
+                        content = it.content
+                    )
+                }
             }
         }
 
