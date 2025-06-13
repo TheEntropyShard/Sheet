@@ -40,14 +40,15 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SimpleTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     readOnly: Boolean = false,
@@ -90,7 +91,7 @@ fun SimpleTextField(
         cursorBrush = cursorBrush,
         decorationBox = { innerTextField ->
             TextFieldDefaults.DecorationBox(
-                value = value,
+                value = value.text,
                 innerTextField = {
                     Box(
                         modifier = Modifier.fillMaxHeight(),
@@ -109,7 +110,7 @@ fun SimpleTextField(
                         bottom = 0.dp,
                     ),
                 placeholder = {
-                    if (value.isEmpty() && placeholder != null) {
+                    if (value.text.isEmpty() && placeholder != null) {
                         Box(
                             modifier = Modifier.fillMaxHeight(),
                             contentAlignment = Alignment.Center
