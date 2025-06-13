@@ -160,7 +160,7 @@ class MainViewModel : ViewModel() {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-
+                    response.use {  }
                 }
             })
         }

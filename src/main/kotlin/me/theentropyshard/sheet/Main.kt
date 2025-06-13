@@ -33,8 +33,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonObject
-import me.theentropyshard.sheet.api.model.PublicMessage
 import me.theentropyshard.sheet.api.model.PublicUser
 import me.theentropyshard.sheet.view.login.LoginView
 import me.theentropyshard.sheet.view.login.LoginViewModel
@@ -42,12 +40,9 @@ import me.theentropyshard.sheet.view.main.MainView
 import me.theentropyshard.sheet.view.main.MainViewModel
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import okhttp3.WebSocket
-import okhttp3.WebSocketListener
 
 object Sheet {
     val httpClient = OkHttpClient()
