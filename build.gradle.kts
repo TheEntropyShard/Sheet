@@ -25,6 +25,10 @@ tasks.create("createDebugZip", Zip::class) {
     archiveVersion = theVersion
 }
 
+tasks.create("printVersion") {
+    print("$theVersion\n")
+}
+
 dependencies {
     implementation(compose.desktop.currentOs)
     implementation(compose.material3)

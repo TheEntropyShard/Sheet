@@ -22,11 +22,15 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
+      - name: Get Version
+        id: get_version
+        run: echo "VERSION=$(./gradlew printVersion --quiet)" >> $GITHUB_ENV
+
       - name: Build with Gradle
         run: ./gradlew clean createDebugZip
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: debug-zip-${{ matrix.os }}
-          path: build/distributions/*.zip
+          name: Sheet-debug-${{ steps.get_version.outputs.VERSION }}-${{ matrix.os }}.zip
+          path: build/distributions/Sheet-${{ steps.get_version.outputs.VERSION }}.zip
