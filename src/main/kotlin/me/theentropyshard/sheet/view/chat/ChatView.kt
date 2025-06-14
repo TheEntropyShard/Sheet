@@ -62,7 +62,7 @@ fun ChatView(
                         modifier = Modifier.fillMaxWidth(),
                         author = it.authorId,
                         date = it.published,
-                        content = it.content
+                        content = it.content ?: ""
                     )
                 }
             }
