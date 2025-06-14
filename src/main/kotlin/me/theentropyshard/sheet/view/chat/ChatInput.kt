@@ -23,11 +23,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Attachment
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -39,6 +43,7 @@ val maxHeight = (48 * 5).dp
 @Composable
 fun ChatInput(
     modifier: Modifier = Modifier,
+    onAddAttachmentClick: () -> Unit,
     onSendMessage: (String) -> Unit
 ) {
     var textState by remember { mutableStateOf(TextFieldValue("")) }
@@ -102,6 +107,20 @@ fun ChatInput(
             value = textState,
             onValueChange = { textState = it },
             placeholder = { Text("Send a message...") },
+            leadingIcon = {
+                IconButton(
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                    onClick = onAddAttachmentClick
+                ) {
+                    Icon(
+                        modifier = Modifier.graphicsLayer {
+                            rotationZ = -45f
+                        },
+                        imageVector = Icons.Filled.Attachment,
+                        contentDescription = "Add an attachment"
+                    )
+                }
+            }
         )
 
         IconButton(

@@ -24,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.AwtWindow
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
@@ -43,6 +44,9 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.WebSocket
+import java.awt.FileDialog
+import java.awt.FileDialog.LOAD
+import java.awt.Frame
 
 object Sheet {
     val httpClient = OkHttpClient()
@@ -114,6 +118,8 @@ private fun Sheet() {
     }
 }
 
+lateinit var parent: Frame
+
 fun main() = application {
     val state = rememberWindowState(size = DpSize(1280.dp, 720.dp))
 
@@ -122,6 +128,26 @@ fun main() = application {
         title = "Sheet",
         onCloseRequest = ::exitApplication
     ) {
+        parent = window
+
         Sheet()
     }
+}
+
+@Composable
+fun FileDialog(onCloseRequest: (result: String?) -> Unit) {
+    AwtWindow(
+        create = {
+            object : FileDialog(parent, "Choose a file", LOAD) {
+                override fun setVisible(value: Boolean) {
+                    super.setVisible(value)
+
+                    if (value) {
+                        onCloseRequest(directory + file)
+                    }
+                }
+            }
+        },
+        dispose = FileDialog::dispose
+    )
 }
