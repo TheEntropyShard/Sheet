@@ -35,7 +35,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.Instant
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss")
@@ -70,7 +75,7 @@ fun ChatMessage(
                     fontSize = 16.sp
                 )
 
-                Text(text = formatter.format(OffsetDateTime.parse(date)))
+                Text(text = formatter.format(ZonedDateTime.parse(date).withZoneSameInstant(ZoneOffset.systemDefault())))
             }
 
             Text(text = content)
