@@ -135,7 +135,7 @@ fun main() = application {
 }
 
 @Composable
-fun FileDialog(onCloseRequest: (result: String?) -> Unit) {
+fun FileDialog(onCloseRequest: (result: List<String>) -> Unit) {
     AwtWindow(
         create = {
             object : FileDialog(parent, "Choose a file", LOAD) {
@@ -143,9 +143,11 @@ fun FileDialog(onCloseRequest: (result: String?) -> Unit) {
                     super.setVisible(value)
 
                     if (value) {
-                        onCloseRequest(directory + file)
+                        onCloseRequest(files.map { file -> file.absolutePath })
                     }
                 }
+            }.apply {
+                isMultipleMode = true
             }
         },
         dispose = FileDialog::dispose

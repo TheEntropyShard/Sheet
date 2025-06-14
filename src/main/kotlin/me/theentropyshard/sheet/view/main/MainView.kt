@@ -27,10 +27,12 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.theentropyshard.sheet.FileDialog
 import me.theentropyshard.sheet.view.chat.ChatView
+import me.theentropyshard.sheet.view.chat.attachment.AttachmentDialog
 import me.theentropyshard.sheet.view.guild.channel.ChannelList
 import me.theentropyshard.sheet.view.guild.dialog.CreateChannelDialog
 import me.theentropyshard.sheet.view.guild.list.GuildList
 import me.theentropyshard.sheet.view.guild.members.MemberList
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,6 +113,8 @@ fun MainView(
             Spacer(modifier = Modifier.width(16.dp))
 
             var isFileChooserOpen by remember { mutableStateOf(false) }
+            var isAttachmentOpen by remember { mutableStateOf(false) }
+            var selectedFiles by remember { mutableStateOf(listOf<String>()) }
 
             key(currentChannel) {
                 ChatView(
@@ -127,10 +131,16 @@ fun MainView(
             }
 
             if (isFileChooserOpen) {
-                FileDialog { path ->
-                    println(path)
+                FileDialog { files ->
+                    println(files)
                     isFileChooserOpen = false
+                    isAttachmentOpen = true
+                    selectedFiles = files
                 }
+            }
+
+            if (isAttachmentOpen) {
+                AttachmentDialog(selectedFiles = selectedFiles) { isAttachmentOpen = false }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
