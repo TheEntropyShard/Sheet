@@ -19,6 +19,9 @@
 package me.theentropyshard.sheet.view.chat.attachment
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -33,17 +36,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import me.theentropyshard.sheet.utils.painterResource
 
 @Composable
 fun AttachmentItem(
     modifier: Modifier = Modifier,
-    name: String
+    name: String,
+    size: Long? = null,
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surface)
+            .clickable { onClick() }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -54,9 +61,20 @@ fun AttachmentItem(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        Text(
-            text = name,
-            overflow = TextOverflow.Ellipsis
-        )
+        Column(verticalArrangement = Arrangement.SpaceEvenly) {
+            Text(
+                text = name,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            size?.let {
+                Text(
+                    text = "$size B",
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
     }
 }

@@ -60,9 +60,7 @@ fun ChatView(
                 items(messages) {
                     ChatMessage(
                         modifier = Modifier.fillMaxWidth(),
-                        author = it.authorId,
-                        date = it.published,
-                        content = it.content ?: ""
+                        message = it
                     )
                 }
             }

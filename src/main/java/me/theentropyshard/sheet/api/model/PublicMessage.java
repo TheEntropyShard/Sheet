@@ -32,4 +32,12 @@ public class PublicMessage {
     @SerializedName("channel_id")
     public String channelId;
     public List<PublicAttachment> files;
+
+    public boolean hasText() {
+        return this.content != null;
+    }
+
+    public boolean hasAttachments() {
+        return !this.files.isEmpty();
+    }
 }
