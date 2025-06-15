@@ -348,4 +348,24 @@ class MainViewModel : ViewModel() {
             })
         }
     }
+
+    fun deleteGuild() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${instance}/guild/${_currentGuild.value?.completeId()}")
+                .header("Authorization", "Bearer $token")
+                .delete()
+                .build()
+
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    e.printStackTrace()
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use { }
+                }
+            })
+        }
+    }
 }

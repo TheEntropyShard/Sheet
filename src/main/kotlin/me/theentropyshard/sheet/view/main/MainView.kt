@@ -29,6 +29,7 @@ import me.theentropyshard.sheet.FileDialog
 import me.theentropyshard.sheet.view.chat.ChatView
 import me.theentropyshard.sheet.view.chat.attachment.AttachmentDialog
 import me.theentropyshard.sheet.view.guild.channel.ChannelList
+import me.theentropyshard.sheet.view.guild.dialog.ConfirmDialog
 import me.theentropyshard.sheet.view.guild.dialog.InputDialog
 import me.theentropyshard.sheet.view.guild.list.GuildList
 import me.theentropyshard.sheet.view.guild.members.MemberList
@@ -55,6 +56,7 @@ fun MainView(
 
     var createChannelDialogVisible by remember { mutableStateOf(false) }
     var createGuildDialogVisible by remember { mutableStateOf(false) }
+    var deleteGuildDialogVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(messages) {
         scope.launch {
@@ -85,6 +87,19 @@ fun MainView(
             onDismissRequest = { createGuildDialogVisible = false }
         ) { name ->
             model.createGuild(name)
+        }
+    }
+
+    if (deleteGuildDialogVisible) {
+        ConfirmDialog(
+            title = "Delete guild",
+            text = "Are you sure you want to delete guild «${currentGuild?.name}»?"
+        ) { yes ->
+            if (yes) {
+                model.deleteGuild()
+            }
+
+            deleteGuildDialogVisible = false
         }
     }
 
@@ -120,6 +135,9 @@ fun MainView(
                     },
                     onCreateChannelClick = {
                         createChannelDialogVisible = true
+                    },
+                    onDeleteGuildClick = {
+                        deleteGuildDialogVisible = true
                     }
                 ) {
                     model.selectChannel(it)

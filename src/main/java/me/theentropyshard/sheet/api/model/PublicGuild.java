@@ -27,4 +27,8 @@ public class PublicGuild {
     public String domain;
     public List<PublicGuildTextChannel> channels = new ArrayList<>();
     public List<Role> roles = new ArrayList<>();
+
+    public String completeId() {
+        return this.id + "@" + this.domain;
+    }
 }

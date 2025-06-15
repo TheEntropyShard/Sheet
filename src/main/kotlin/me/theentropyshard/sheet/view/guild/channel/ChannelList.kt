@@ -45,6 +45,7 @@ fun ChannelList(
     guildName: String,
     isChannelSelected: (PublicGuildTextChannel) -> Boolean,
     onCreateChannelClick: () -> Unit,
+    onDeleteGuildClick: () -> Unit,
     onClick: (String) -> Unit
 ) {
     var menuVisible by remember { mutableStateOf(false) }
@@ -55,7 +56,8 @@ fun ChannelList(
             GuildMenu(
                 visible = menuVisible,
                 onDismissRequest = { menuVisible = false },
-                onCreateChannelClick = onCreateChannelClick
+                onCreateChannelClick = onCreateChannelClick,
+                onDeleteGuildClick = onDeleteGuildClick,
             )
         }
 
