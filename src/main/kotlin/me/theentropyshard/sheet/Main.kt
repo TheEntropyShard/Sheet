@@ -18,7 +18,6 @@
 
 package me.theentropyshard.sheet
 
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.text.input.TextFieldValue
@@ -39,13 +38,13 @@ import me.theentropyshard.sheet.view.login.LoginView
 import me.theentropyshard.sheet.view.login.LoginViewModel
 import me.theentropyshard.sheet.view.main.MainView
 import me.theentropyshard.sheet.view.main.MainViewModel
+import me.theentropyshard.sheet.view.theme.SheetTheme
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.WebSocket
 import java.awt.FileDialog
-import java.awt.FileDialog.LOAD
 import java.awt.Frame
 
 object Sheet {
@@ -91,7 +90,7 @@ private fun Sheet() {
         }
     }
 
-    MaterialTheme {
+    SheetTheme {
         NavHost(
             navController = navController,
             startDestination = "login"
