@@ -18,12 +18,13 @@
 
 package me.theentropyshard.sheet.api.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PublicGuild {
     public String id;
     public String name;
     public String domain;
-    public List<PublicGuildTextChannel> channels;
-    public List<Role> roles;
+    public List<PublicGuildTextChannel> channels = new ArrayList<>();
+    public List<Role> roles = new ArrayList<>();
 }

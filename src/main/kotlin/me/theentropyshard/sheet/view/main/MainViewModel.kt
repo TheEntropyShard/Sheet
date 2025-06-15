@@ -20,7 +20,6 @@ package me.theentropyshard.sheet.view.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -108,11 +107,19 @@ class MainViewModel : ViewModel() {
                     }
 
                     "RELATIONSHIP_CREATE" -> {
-
+                        println("warn: unhandled message: RELATIONSHIP_CREATE")
                     }
 
                     "GUILD_CREATE" -> {
+                        val guild =
+                            gson.fromJson(message["d"].asJsonObject["guild"], PublicGuild::class.java)
 
+                        _guilds.update { list -> list + guild }
+                        _currentGuild.update { guild }
+                    }
+
+                    "GUILD_DELETE" -> {
+                        // TODO
                     }
 
                     "CHANNEL_CREATE" -> {
@@ -123,10 +130,30 @@ class MainViewModel : ViewModel() {
                         _currentChannel.update { channel }
                     }
 
+                    "CHANNEL_DELETE" -> {
+                        // TODO
+                    }
+
                     "MEMBERS_CHUNK" -> {
                         val array = message["d"].asJsonObject["items"].asJsonArray
 
                         _members.update { array.filter { it.isJsonObject }.map { it.asJsonObject } }
+                    }
+
+                    "ROLE_ADD" -> {
+                        println("warn: unhandled message: ROLE_ADD")
+                    }
+
+                    "ROLE_MEMBER_ADD" -> {
+                        println("warn: unhandled message: ROLE_MEMBER_ADD")
+                    }
+
+                    "ROLE_MEMBER_LEAVE" -> {
+                        println("warn: unhandled message: ROLE_MEMBER_LEAVE")
+                    }
+
+                    "MEMBER_LEAVE" -> {
+                        println("warn: unhandled message: MEMBER_LEAVE")
                     }
                 }
             }
@@ -255,6 +282,29 @@ class MainViewModel : ViewModel() {
 
             val request = Request.Builder()
                 .url("${instance}/guild/${_currentGuild.value?.id}@${_currentGuild.value?.domain}/channel")
+                .header("Authorization", "Bearer $token")
+                .post(data.toRequestBody())
+                .build()
+
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    e.printStackTrace()
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use {  }
+                }
+            })
+        }
+    }
+
+    fun createGuild(name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val data = JsonObject()
+            data.addProperty("name", name)
+
+            val request = Request.Builder()
+                .url("${instance}/guild")
                 .header("Authorization", "Bearer $token")
                 .post(data.toRequestBody())
                 .build()

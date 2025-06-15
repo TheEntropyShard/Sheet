@@ -23,8 +23,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 
 @Composable
-fun CreateChannelDialog(
+fun InputDialog(
     modifier: Modifier = Modifier,
+    title: String,
+    label: String,
+    placeholder: String,
     onDismissRequest: () -> Unit,
     onNameSubmitted: (String) -> Unit
 ) {
@@ -34,7 +37,7 @@ fun CreateChannelDialog(
         modifier = modifier,
         onDismissRequest = onDismissRequest,
         title = {
-            Text(text = "Create a new channel")
+            Text(text = title)
         },
         text = {
             OutlinedTextField(
@@ -42,10 +45,10 @@ fun CreateChannelDialog(
                 onValueChange = { text = it },
                 singleLine = true,
                 label = {
-                    Text(text = "Channel name")
+                    Text(text = label)
                 },
                 placeholder = {
-                    Text(text = "Enter channel name")
+                    Text(text = placeholder)
                 }
             )
         },

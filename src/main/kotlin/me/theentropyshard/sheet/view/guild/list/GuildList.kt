@@ -20,7 +20,6 @@ package me.theentropyshard.sheet.view.guild.list
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -44,17 +43,17 @@ fun GuildList(
     guilds: List<PublicGuild>,
     onMeClick: () -> Unit,
     onAddGuildClick: () -> Unit,
-    onClick: (String) -> Unit,
+    onChannelClick: (String) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
-            GuildItem(onClick = {}) {
+            GuildItem(onClick = onMeClick) {
                 Icon(
                     imageVector = Icons.Filled.Person,
-                    contentDescription = ""
+                    contentDescription = "Click to show private chats"
                 )
             }
         }
@@ -64,7 +63,7 @@ fun GuildList(
         }
 
         items(guilds) {
-            GuildItem(onClick = { onClick(it.id) }) {
+            GuildItem(onClick = { onChannelClick(it.id) }) {
                 Text(text = "${it.name[0]}")
             }
         }
@@ -74,10 +73,10 @@ fun GuildList(
         }
 
         item {
-            GuildItem(onClick = {}) {
+            GuildItem(onClick = onAddGuildClick) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = ""
+                    contentDescription = "Click to add a new guild"
                 )
             }
         }

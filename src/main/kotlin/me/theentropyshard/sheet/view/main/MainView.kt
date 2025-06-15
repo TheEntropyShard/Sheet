@@ -29,7 +29,7 @@ import me.theentropyshard.sheet.FileDialog
 import me.theentropyshard.sheet.view.chat.ChatView
 import me.theentropyshard.sheet.view.chat.attachment.AttachmentDialog
 import me.theentropyshard.sheet.view.guild.channel.ChannelList
-import me.theentropyshard.sheet.view.guild.dialog.CreateChannelDialog
+import me.theentropyshard.sheet.view.guild.dialog.InputDialog
 import me.theentropyshard.sheet.view.guild.list.GuildList
 import me.theentropyshard.sheet.view.guild.members.MemberList
 
@@ -53,7 +53,8 @@ fun MainView(
         model.loadGuilds()
     }
 
-    var dialogVisible by remember { mutableStateOf(false) }
+    var createChannelDialogVisible by remember { mutableStateOf(false) }
+    var createGuildDialogVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(messages) {
         scope.launch {
@@ -65,11 +66,25 @@ fun MainView(
 
     currentCompositionLocalContext
 
-    if (dialogVisible) {
-        CreateChannelDialog(
-            onDismissRequest = { dialogVisible = false }
+    if (createChannelDialogVisible) {
+        InputDialog(
+            title = "Create a new channel",
+            label = "Channel name",
+            placeholder = "Enter channel name...",
+            onDismissRequest = { createChannelDialogVisible = false }
         ) { name ->
             model.createChannel(name)
+        }
+    }
+
+    if (createGuildDialogVisible) {
+        InputDialog(
+            title = "Create a new guild",
+            label = "Guild name",
+            placeholder = "Enter guild name...",
+            onDismissRequest = { createGuildDialogVisible = false }
+        ) { name ->
+            model.createGuild(name)
         }
     }
 
@@ -86,7 +101,7 @@ fun MainView(
 
                 },
                 onAddGuildClick = {
-
+                    createGuildDialogVisible = true
                 }
             ) {
                 model.selectGuild(it)
@@ -103,7 +118,7 @@ fun MainView(
                         channel.id == currentChannel?.id
                     },
                     onCreateChannelClick = {
-                        dialogVisible = true
+                        createChannelDialogVisible = true
                     }
                 ) {
                     model.selectChannel(it)
