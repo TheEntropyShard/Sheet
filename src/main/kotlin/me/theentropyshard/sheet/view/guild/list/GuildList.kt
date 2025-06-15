@@ -29,8 +29,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +40,7 @@ import me.theentropyshard.sheet.api.model.PublicGuild
 fun GuildList(
     modifier: Modifier = Modifier,
     guilds: List<PublicGuild>,
+    isGuildSelected: (PublicGuild) -> Boolean,
     onMeClick: () -> Unit,
     onAddGuildClick: () -> Unit,
     onChannelClick: (String) -> Unit,
@@ -50,7 +50,7 @@ fun GuildList(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
-            GuildItem(onClick = onMeClick) {
+            GuildItem(selected = false, onClick = onMeClick) {
                 Icon(
                     imageVector = Icons.Filled.Person,
                     contentDescription = "Click to show private chats"
@@ -63,7 +63,7 @@ fun GuildList(
         }
 
         items(guilds) {
-            GuildItem(onClick = { onChannelClick(it.id) }) {
+            GuildItem(selected = isGuildSelected(it), onClick = { onChannelClick(it.id) }) {
                 Text(text = "${it.name[0]}")
             }
         }
@@ -73,7 +73,7 @@ fun GuildList(
         }
 
         item {
-            GuildItem(onClick = onAddGuildClick) {
+            GuildItem(selected = false, onClick = onAddGuildClick) {
                 Icon(
                     imageVector = Icons.Filled.Add,
                     contentDescription = "Click to add a new guild"

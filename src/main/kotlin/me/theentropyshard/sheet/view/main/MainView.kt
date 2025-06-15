@@ -97,6 +97,7 @@ fun MainView(
             GuildList(
                 modifier = Modifier.fillMaxHeight(),
                 guilds = guilds,
+                isGuildSelected = { it.id == currentGuild?.id },
                 onMeClick = {
 
                 },

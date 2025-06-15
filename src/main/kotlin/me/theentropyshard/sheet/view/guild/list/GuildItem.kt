@@ -28,6 +28,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
@@ -35,15 +39,26 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun GuildItem(
     modifier: Modifier = Modifier,
+    selected: Boolean,
     onClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
+    val scheme = MaterialTheme.colorScheme
+
     Box(
         modifier = modifier
             .size(56.dp)
             .clip(RoundedCornerShape(50))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .pointerHoverIcon(icon = PointerIcon.Hand)
+            .drawBehind {
+                if (selected) {
+                    drawCircle(
+                        color = scheme.secondaryContainer,
+                        radius = (size.minDimension - 6) / 2.0f
+                    )
+                }
+            }
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
