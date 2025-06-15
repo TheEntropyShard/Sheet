@@ -106,7 +106,7 @@ fun ChatInput(
             onTextLayout = { result -> height = result.size.height.dp + (result.lineCount * 8).dp },
             value = textState,
             onValueChange = { textState = it },
-            placeholder = { Text("Send a message...") },
+            placeholder = { Text("Write a message...") },
             leadingIcon = {
                 IconButton(
                     modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
