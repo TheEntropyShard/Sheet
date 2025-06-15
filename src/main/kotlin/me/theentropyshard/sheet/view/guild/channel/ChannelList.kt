@@ -45,6 +45,7 @@ fun ChannelList(
     guildName: String,
     isChannelSelected: (PublicGuildTextChannel) -> Boolean,
     onCreateChannelClick: () -> Unit,
+    onDeleteChannelClick: (PublicGuildTextChannel) -> Unit,
     onDeleteGuildClick: () -> Unit,
     onClick: (String) -> Unit
 ) {
@@ -106,6 +107,7 @@ fun ChannelList(
                 items(channels) {
                     ChannelItem(
                         name = it.name,
+                        onDelete = { onDeleteChannelClick(it) },
                         selected = isChannelSelected(it)
                     ) { onClick(it.id) }
                 }

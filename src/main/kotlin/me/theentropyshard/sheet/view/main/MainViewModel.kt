@@ -93,6 +93,7 @@ class MainViewModel : ViewModel() {
                 val seq = sequence++
 
                 val message = gson.fromJson(text, JsonObject::class.java)
+                println(message)
 
                 when (message["t"].asString) {
                     "READY" -> {
@@ -153,7 +154,7 @@ class MainViewModel : ViewModel() {
                     }
 
                     "CHANNEL_DELETE" -> {
-                        println("warn: unhandled message: CHANNEL_DELETE")
+                        println(message)
                     }
 
                     "MEMBERS_CHUNK" -> {
@@ -353,6 +354,26 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val request = Request.Builder()
                 .url("${instance}/guild/${_currentGuild.value?.completeId()}")
+                .header("Authorization", "Bearer $token")
+                .delete()
+                .build()
+
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    e.printStackTrace()
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use { }
+                }
+            })
+        }
+    }
+
+    fun deleteChannel(completeId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${instance}/channel/$completeId")
                 .header("Authorization", "Bearer $token")
                 .delete()
                 .build()

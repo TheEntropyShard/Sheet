@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.theentropyshard.sheet.FileDialog
+import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 import me.theentropyshard.sheet.view.chat.ChatView
 import me.theentropyshard.sheet.view.chat.attachment.AttachmentDialog
 import me.theentropyshard.sheet.view.guild.channel.ChannelList
@@ -55,8 +56,11 @@ fun MainView(
     }
 
     var createChannelDialogVisible by remember { mutableStateOf(false) }
+    var deleteChannelDialogVisible by remember { mutableStateOf(false) }
     var createGuildDialogVisible by remember { mutableStateOf(false) }
     var deleteGuildDialogVisible by remember { mutableStateOf(false) }
+
+    var channelForDeletion by remember { mutableStateOf<PublicGuildTextChannel?>(null) }
 
     LaunchedEffect(messages) {
         scope.launch {
@@ -76,6 +80,20 @@ fun MainView(
             onDismissRequest = { createChannelDialogVisible = false }
         ) { name ->
             model.createChannel(name)
+        }
+    }
+
+    if (deleteChannelDialogVisible) {
+        ConfirmDialog(
+            title = "Delete channel",
+            text = "Are you sure you want to delete channel «${channelForDeletion!!.name}»?"
+        ) { yes ->
+            if (yes) {
+                model.deleteChannel(channelForDeletion!!.completeId())
+                channelForDeletion = null
+            }
+
+            deleteChannelDialogVisible = false
         }
     }
 
@@ -135,6 +153,10 @@ fun MainView(
                     },
                     onCreateChannelClick = {
                         createChannelDialogVisible = true
+                    },
+                    onDeleteChannelClick = { channel ->
+                        channelForDeletion = channel
+                        deleteChannelDialogVisible = true
                     },
                     onDeleteGuildClick = {
                         deleteGuildDialogVisible = true
