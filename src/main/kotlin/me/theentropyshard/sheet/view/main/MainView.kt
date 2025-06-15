@@ -70,8 +70,6 @@ fun MainView(
         }
     }
 
-    currentCompositionLocalContext
-
     if (createChannelDialogVisible) {
         InputDialog(
             title = "Create a new channel",
