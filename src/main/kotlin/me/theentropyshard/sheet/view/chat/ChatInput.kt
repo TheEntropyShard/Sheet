@@ -113,26 +113,26 @@ fun ChatInput(
                     onClick = onAddAttachmentClick
                 ) {
                     Icon(
-                        modifier = Modifier.graphicsLayer {
-                            rotationZ = -45f
-                        },
+                        modifier = Modifier.graphicsLayer { rotationZ = -45f },
                         imageVector = Icons.Filled.Attachment,
                         contentDescription = "Add an attachment"
                     )
                 }
+            },
+            trailingIcon = {
+                IconButton(
+                    modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),
+                    onClick = {
+                        onSendMessage(textState.text)
+                        textState = TextFieldValue("")
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Send,
+                        contentDescription = "Click to send a message"
+                    )
+                }
             }
         )
-
-        IconButton(
-            onClick = {
-                onSendMessage(textState.text)
-                textState = TextFieldValue("")
-            }
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.Send,
-                contentDescription = "Click to send a message"
-            )
-        }
     }
 }
