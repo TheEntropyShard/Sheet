@@ -125,7 +125,10 @@ fun main() = application {
     Window(
         state = state,
         title = "Sheet",
-        onCloseRequest = ::exitApplication
+        onCloseRequest = {
+            Sheet.closeWebSocket()
+            exitApplication()
+        }
     ) {
         parent = window
 
