@@ -20,6 +20,7 @@ package me.theentropyshard.sheet.view.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +56,9 @@ class MainViewModel : ViewModel() {
 
     private val _messages: MutableStateFlow<List<PublicMessage>> = MutableStateFlow(listOf())
     val messages = _messages.asStateFlow()
+
+    private val _members: MutableStateFlow<List<JsonObject>> = MutableStateFlow(listOf())
+    val members = _members.asStateFlow()
 
     private var sequence: Int = 0
 
@@ -118,6 +122,12 @@ class MainViewModel : ViewModel() {
                         _currentGuild.value!!.channels.add(channel)
                         _currentChannel.update { channel }
                     }
+
+                    "MEMBERS_CHUNK" -> {
+                        val array = message["d"].asJsonObject["items"].asJsonArray
+
+                        _members.update { array.filter { it.isJsonObject }.map { it.asJsonObject } }
+                    }
                 }
             }
 
@@ -131,6 +141,13 @@ class MainViewModel : ViewModel() {
         }
 
         webSocket = httpClient.newWebSocket(request, listener)
+    }
+
+    fun subscribeForChannelMembersRange(min: Int = 0, max: Int = 100) {
+        viewModelScope.launch(Dispatchers.IO) {
+            webSocket.send("{ \"t\": \"members\", \"channel_id\": \"${_currentChannel.value?.completeId()}\", " +
+                    "\"range\": [$min, $max] }")
+        }
     }
 
     fun loadGuilds() {
@@ -198,6 +215,7 @@ class MainViewModel : ViewModel() {
             if (channel.id == id) {
                 _currentChannel.value = channel
                 loadMessages("$id@${channel.domain}", false)
+                subscribeForChannelMembersRange()
 
                 break
             }

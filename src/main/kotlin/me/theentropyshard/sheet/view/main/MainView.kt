@@ -32,7 +32,6 @@ import me.theentropyshard.sheet.view.guild.channel.ChannelList
 import me.theentropyshard.sheet.view.guild.dialog.CreateChannelDialog
 import me.theentropyshard.sheet.view.guild.list.GuildList
 import me.theentropyshard.sheet.view.guild.members.MemberList
-import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +44,7 @@ fun MainView(
     val currentGuild by model.currentGuild.collectAsState()
     val currentChannel by model.currentChannel.collectAsState()
     val messages by model.messages.collectAsState()
+    val members by model.members.collectAsState()
 
     val scope = rememberCoroutineScope()
     val state = rememberLazyListState()
@@ -147,7 +147,7 @@ fun MainView(
 
             MemberList(
                 modifier = Modifier.fillMaxHeight().width(200.dp),
-                members = listOf("darkcat09", "doesnm", "theentropyshard")
+                members = members.map { obj -> obj["name"].asString }
             )
 
             Spacer(modifier = Modifier.width(16.dp))

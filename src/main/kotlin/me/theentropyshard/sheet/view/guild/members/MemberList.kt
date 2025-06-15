@@ -19,8 +19,15 @@
 package me.theentropyshard.sheet.view.guild.members
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -30,12 +37,25 @@ fun MemberList(
     modifier: Modifier = Modifier,
     members: List<String>
 ) {
-    LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(members) {
-            MemberItem(username = it)
+    Column(modifier = modifier) {
+        Text(text = if (members.size == 1) "1 member" else "${members.size} members")
+
+        Spacer(modifier = Modifier.height(2.dp))
+
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            thickness = 2.dp,
+            color = MaterialTheme.colorScheme.surfaceContainer
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(members) {
+                MemberItem(username = it)
+            }
         }
     }
 }
