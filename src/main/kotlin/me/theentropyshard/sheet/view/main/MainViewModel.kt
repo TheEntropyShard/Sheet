@@ -90,13 +90,25 @@ class MainViewModel : ViewModel() {
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
-                sequence++
+                val seq = sequence++
 
                 val message = gson.fromJson(text, JsonObject::class.java)
 
                 when (message["t"].asString) {
                     "READY" -> {
                         startHeartbeat()
+                    }
+
+                    "HEARTBEAT_ACK" -> {
+                        val recSeq = message["s"].asInt
+
+                        if (recSeq != seq) {
+                            throw RuntimeException("Out of sync. Sequence mismatch: received: $recSeq, our: $seq")
+                        }
+                    }
+
+                    "INVITE_CREATE" -> {
+                        println("warn: unhandled message: INVITE_CREATE")
                     }
 
                     "MESSAGE_CREATE" -> {
@@ -110,6 +122,10 @@ class MainViewModel : ViewModel() {
                         println("warn: unhandled message: RELATIONSHIP_CREATE")
                     }
 
+                    "RELATIONSHIP_DELETE" -> {
+                        println("warn: unhandled message: RELATIONSHIP_DELETE")
+                    }
+
                     "GUILD_CREATE" -> {
                         val guild =
                             gson.fromJson(message["d"].asJsonObject["guild"], PublicGuild::class.java)
@@ -119,7 +135,7 @@ class MainViewModel : ViewModel() {
                     }
 
                     "GUILD_DELETE" -> {
-                        // TODO
+                        println("warn: unhandled message: GUILD_DELETE")
                     }
 
                     "CHANNEL_CREATE" -> {
@@ -131,7 +147,7 @@ class MainViewModel : ViewModel() {
                     }
 
                     "CHANNEL_DELETE" -> {
-                        // TODO
+                        println("warn: unhandled message: CHANNEL_DELETE")
                     }
 
                     "MEMBERS_CHUNK" -> {
@@ -140,7 +156,7 @@ class MainViewModel : ViewModel() {
                         _members.update { array.filter { it.isJsonObject }.map { it.asJsonObject } }
                     }
 
-                    "ROLE_ADD" -> {
+                    "ROLE_CREATE" -> {
                         println("warn: unhandled message: ROLE_ADD")
                     }
 
@@ -150,6 +166,10 @@ class MainViewModel : ViewModel() {
 
                     "ROLE_MEMBER_LEAVE" -> {
                         println("warn: unhandled message: ROLE_MEMBER_LEAVE")
+                    }
+
+                    "MEMBER_JOIN" -> {
+                        println("warn: unhandled message: MEMBER_JOIN")
                     }
 
                     "MEMBER_LEAVE" -> {
@@ -172,8 +192,10 @@ class MainViewModel : ViewModel() {
 
     fun subscribeForChannelMembersRange(min: Int = 0, max: Int = 100) {
         viewModelScope.launch(Dispatchers.IO) {
-            webSocket.send("{ \"t\": \"members\", \"channel_id\": \"${_currentChannel.value?.completeId()}\", " +
-                    "\"range\": [$min, $max] }")
+            webSocket.send(
+                "{ \"t\": \"members\", \"channel_id\": \"${_currentChannel.value?.completeId()}\", " +
+                        "\"range\": [$min, $max] }"
+            )
         }
     }
 
@@ -220,7 +242,7 @@ class MainViewModel : ViewModel() {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    response.use {  }
+                    response.use { }
                 }
             })
         }
@@ -292,7 +314,7 @@ class MainViewModel : ViewModel() {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    response.use {  }
+                    response.use { }
                 }
             })
         }
@@ -315,7 +337,7 @@ class MainViewModel : ViewModel() {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    response.use {  }
+                    response.use { }
                 }
             })
         }
