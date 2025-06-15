@@ -135,7 +135,13 @@ class MainViewModel : ViewModel() {
                     }
 
                     "GUILD_DELETE" -> {
-                        println("warn: unhandled message: GUILD_DELETE")
+                        val guildId = message["d"].asJsonObject["guild_id"].asString
+
+                        val guild = _guilds.value.find { guild -> guild.id == guildId }
+
+                        if (guild != null) {
+                            _guilds.update { list -> list - guild }
+                        }
                     }
 
                     "CHANNEL_CREATE" -> {
@@ -156,6 +162,14 @@ class MainViewModel : ViewModel() {
                         _members.update { array.filter { it.isJsonObject }.map { it.asJsonObject } }
                     }
 
+                    "MEMBER_JOIN" -> {
+                        println("warn: unhandled message: MEMBER_JOIN")
+                    }
+
+                    "MEMBER_LEAVE" -> {
+                        println("warn: unhandled message: MEMBER_LEAVE")
+                    }
+
                     "ROLE_CREATE" -> {
                         println("warn: unhandled message: ROLE_ADD")
                     }
@@ -166,14 +180,6 @@ class MainViewModel : ViewModel() {
 
                     "ROLE_MEMBER_LEAVE" -> {
                         println("warn: unhandled message: ROLE_MEMBER_LEAVE")
-                    }
-
-                    "MEMBER_JOIN" -> {
-                        println("warn: unhandled message: MEMBER_JOIN")
-                    }
-
-                    "MEMBER_LEAVE" -> {
-                        println("warn: unhandled message: MEMBER_LEAVE")
                     }
                 }
             }
