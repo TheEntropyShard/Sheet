@@ -151,7 +151,7 @@ private fun ImageAttachment(
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surface
+        color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         NoMaxSizeImage(
             modifier = Modifier.padding(6.dp).clip(RoundedCornerShape(6.dp)),

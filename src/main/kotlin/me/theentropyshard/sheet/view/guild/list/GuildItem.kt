@@ -42,7 +42,7 @@ fun GuildItem(
         modifier = modifier
             .size(56.dp)
             .clip(RoundedCornerShape(50))
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .pointerHoverIcon(icon = PointerIcon.Hand)
             .clickable { onClick() },
         contentAlignment = Alignment.Center

@@ -63,7 +63,7 @@ fun ChannelList(
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow)
                     .fillMaxWidth()
                     .pointerHoverIcon(icon = PointerIcon.Hand)
                     .clickable { menuVisible = !menuVisible }

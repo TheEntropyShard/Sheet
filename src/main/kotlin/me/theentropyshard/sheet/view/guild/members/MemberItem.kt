@@ -41,7 +41,7 @@ fun MemberItem(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .fillMaxWidth()
             .pointerHoverIcon(icon = PointerIcon.Hand)
             .clickable {},
