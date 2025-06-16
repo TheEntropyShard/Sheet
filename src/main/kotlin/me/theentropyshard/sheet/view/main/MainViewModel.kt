@@ -35,6 +35,7 @@ import me.theentropyshard.sheet.Sheet.webSocket
 import me.theentropyshard.sheet.api.model.PublicGuild
 import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 import me.theentropyshard.sheet.api.model.PublicMessage
+import me.theentropyshard.sheet.fromJson
 import me.theentropyshard.sheet.toRequestBody
 import okhttp3.*
 import java.io.IOException
@@ -52,6 +53,9 @@ class MainViewModel : ViewModel() {
 
     private val _currentChannel: MutableStateFlow<PublicGuildTextChannel?> = MutableStateFlow(null)
     val currentChannel = _currentChannel.asStateFlow()
+
+    private val _channels: MutableStateFlow<List<PublicGuildTextChannel>> = MutableStateFlow(listOf())
+    val channels = _channels.asStateFlow()
 
     private val _messages: MutableStateFlow<List<PublicMessage>> = MutableStateFlow(listOf())
     val messages = _messages.asStateFlow()
@@ -97,6 +101,19 @@ class MainViewModel : ViewModel() {
 
                 when (message["t"].asString) {
                     "READY" -> {
+                        val guilds = message["d"].asJsonObject["guilds"].asJsonArray
+
+                        for (guildElement in guilds) {
+                            val guild = gson.fromJson(guildElement, PublicGuild::class)
+
+                            for (channel in (guildElement as JsonObject)["channels"].asJsonArray) {
+                                val parsedChannel = gson.fromJson(channel, PublicGuildTextChannel::class)
+                                parsedChannel.guildId = guild.completeId()
+
+                                _channels.update { channels -> channels + parsedChannel }
+                            }
+                        }
+
                         startHeartbeat()
                     }
 
@@ -146,15 +163,23 @@ class MainViewModel : ViewModel() {
                     }
 
                     "CHANNEL_CREATE" -> {
-                        val channel =
-                            gson.fromJson(message["d"].asJsonObject["channel"], PublicGuildTextChannel::class.java)
+                        val channel = gson.fromJson(message["d"].asJsonObject["channel"], PublicGuildTextChannel::class)
+                        channel.guildId += "@${channel.domain}"
 
-                        _currentGuild.value!!.channels.add(channel)
+                        _channels.update { channels -> channels + channel }
                         _currentChannel.update { channel }
                     }
 
                     "CHANNEL_DELETE" -> {
-                        println(message)
+                        val channelId = message["d"].asJsonObject["channel_id"].asString
+                        val guildId = message["d"].asJsonObject["guild_id"].asString
+                        _channels.update { channels ->
+                            val list = channels.toMutableList()
+                            list.removeIf { channel ->
+                                channel.completeId() == channelId && channel.guildId == guildId
+                            }
+                            list
+                        }
                     }
 
                     "MEMBERS_CHUNK" -> {

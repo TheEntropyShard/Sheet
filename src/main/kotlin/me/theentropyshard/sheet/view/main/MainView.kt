@@ -45,6 +45,7 @@ fun MainView(
     val guilds by model.guilds.collectAsState()
     val currentGuild by model.currentGuild.collectAsState()
     val currentChannel by model.currentChannel.collectAsState()
+    val channels by model.channels.collectAsState()
     val messages by model.messages.collectAsState()
     val members by model.members.collectAsState()
 
@@ -141,10 +142,10 @@ fun MainView(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            key(currentGuild, currentChannel) {
+            key(channels) {
                 ChannelList(
                     modifier = Modifier.fillMaxHeight().width(200.dp),
-                    channels = currentGuild!!.channels,
+                    channels = channels.filter { channel -> channel.guildId == currentGuild?.completeId() },
                     guildName = currentGuild!!.name,
                     isChannelSelected = { channel ->
                         channel.id == currentChannel?.id

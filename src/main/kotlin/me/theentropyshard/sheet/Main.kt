@@ -33,6 +33,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import me.theentropyshard.sheet.api.model.PublicUser
 import me.theentropyshard.sheet.view.login.LoginView
 import me.theentropyshard.sheet.view.login.LoginViewModel
@@ -46,6 +47,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.WebSocket
 import java.awt.FileDialog
 import java.awt.Frame
+import kotlin.reflect.KClass
 
 object Sheet {
     val httpClient = OkHttpClient()
@@ -60,6 +62,14 @@ object Sheet {
     fun closeWebSocket() {
         webSocket.close(1000, null)
     }
+}
+
+fun <T : Any> Gson.fromJson(json: JsonElement?, klass: KClass<T>): T {
+    return this.fromJson(json, klass.java)
+}
+
+fun <T : Any> Gson.fromJson(json: String?, klass: KClass<T>): T {
+    return this.fromJson(json, klass.java)
 }
 
 fun Any.toRequestBody(): RequestBody {
