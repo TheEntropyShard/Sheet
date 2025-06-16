@@ -60,7 +60,9 @@ object Sheet {
     lateinit var webSocket: WebSocket
 
     fun closeWebSocket() {
-        webSocket.close(1000, null)
+        if (this::webSocket.isInitialized) {
+            webSocket.close(1000, null)
+        }
     }
 }
 
