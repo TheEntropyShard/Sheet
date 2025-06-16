@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,6 +45,7 @@ fun ChannelItem(
     modifier: Modifier = Modifier,
     name: String,
     selected: Boolean,
+    onRename: () -> Unit,
     onDelete: () -> Unit,
     onClick: () -> Unit
 ) {
@@ -84,6 +86,27 @@ fun ChannelItem(
             expanded = menuShown,
             onDismissRequest = { menuShown = false }
         ) {
+            DropdownMenuItem(
+                modifier = Modifier.fillMaxWidth().height(32.dp),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = ""
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Rename channel"
+                    )
+                },
+                onClick = {
+                    menuShown = false
+                    onRename()
+                }
+            )
+
+            Separator(color = MaterialTheme.colorScheme.surfaceContainerHighest)
+
             DropdownMenuItem(
                 modifier = Modifier.fillMaxWidth().height(32.dp),
                 leadingIcon = {

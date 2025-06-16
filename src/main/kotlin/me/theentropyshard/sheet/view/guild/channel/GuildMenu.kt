@@ -91,7 +91,7 @@ fun GuildMenu(
 }
 
 @Composable
-private fun ColumnScope.Separator(
+fun ColumnScope.Separator(
     modifier: Modifier = Modifier,
     color: Color
 ) {

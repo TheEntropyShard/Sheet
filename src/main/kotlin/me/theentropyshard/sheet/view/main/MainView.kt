@@ -57,10 +57,12 @@ fun MainView(
     }
 
     var createChannelDialogVisible by remember { mutableStateOf(false) }
+    var renameChannelDialogVisible by remember { mutableStateOf(false) }
     var deleteChannelDialogVisible by remember { mutableStateOf(false) }
     var createGuildDialogVisible by remember { mutableStateOf(false) }
     var deleteGuildDialogVisible by remember { mutableStateOf(false) }
 
+    var channelForRename by remember { mutableStateOf<PublicGuildTextChannel?>(null) }
     var channelForDeletion by remember { mutableStateOf<PublicGuildTextChannel?>(null) }
 
     LaunchedEffect(messages) {
@@ -79,6 +81,19 @@ fun MainView(
             onDismissRequest = { createChannelDialogVisible = false }
         ) { name ->
             model.createChannel(name)
+        }
+    }
+
+    if (renameChannelDialogVisible) {
+        InputDialog(
+            title = "Rename a channel",
+            label = "Channel name",
+            placeholder = "Enter a new name...",
+            initial = channelForRename!!.name,
+            onDismissRequest = { renameChannelDialogVisible = false }
+        ) { name ->
+            model.renameChannel(channelForRename!!.completeId(), name)
+            channelForDeletion = null
         }
     }
 
@@ -156,6 +171,10 @@ fun MainView(
                     onDeleteChannelClick = { channel ->
                         channelForDeletion = channel
                         deleteChannelDialogVisible = true
+                    },
+                    onRenameChannelClick = { channel ->
+                        channelForRename = channel
+                        renameChannelDialogVisible = true
                     },
                     onDeleteGuildClick = {
                         deleteGuildDialogVisible = true

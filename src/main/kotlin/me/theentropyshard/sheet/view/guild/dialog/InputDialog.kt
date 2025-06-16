@@ -28,10 +28,11 @@ fun InputDialog(
     title: String,
     label: String,
     placeholder: String,
+    initial: String = "",
     onDismissRequest: () -> Unit,
     onNameSubmitted: (String) -> Unit
 ) {
-    var text by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf(initial) }
 
     AlertDialog(
         modifier = modifier,

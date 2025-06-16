@@ -355,6 +355,29 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun renameChannel(channelId: String, name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val data = JsonObject()
+            data.addProperty("name", name)
+
+            val request = Request.Builder()
+                .url("${instance}/channel/$channelId")
+                .header("Authorization", "Bearer $token")
+                .patch(data.toRequestBody())
+                .build()
+
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    e.printStackTrace()
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use { }
+                }
+            })
+        }
+    }
+
     fun createGuild(name: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val data = JsonObject()
