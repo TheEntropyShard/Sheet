@@ -211,7 +211,10 @@ class MainViewModel : ViewModel() {
             }
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                println("socket was closed: $code")
+                when (code) {
+                    1000 -> println("WebSocket was closed successfully")
+                    else -> println("WebSocket was closed with code $code because $reason")
+                }
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
