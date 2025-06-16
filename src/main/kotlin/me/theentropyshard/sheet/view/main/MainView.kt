@@ -29,9 +29,12 @@ import me.theentropyshard.sheet.FileDialog
 import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 import me.theentropyshard.sheet.view.chat.ChatView
 import me.theentropyshard.sheet.view.chat.attachment.AttachmentDialog
+import me.theentropyshard.sheet.view.guild.channel.ChannelMenuItemAction
 import me.theentropyshard.sheet.view.guild.channel.ChannelList
+import me.theentropyshard.sheet.view.guild.channel.GuildMenuItemAction
 import me.theentropyshard.sheet.view.guild.dialog.ConfirmDialog
 import me.theentropyshard.sheet.view.guild.dialog.InputDialog
+import me.theentropyshard.sheet.view.guild.invite.CreateInviteDialog
 import me.theentropyshard.sheet.view.guild.list.GuildList
 import me.theentropyshard.sheet.view.guild.members.MemberList
 
@@ -58,6 +61,7 @@ fun MainView(
 
     var createChannelDialogVisible by remember { mutableStateOf(false) }
     var renameChannelDialogVisible by remember { mutableStateOf(false) }
+    var createInviteDialogVisible by remember { mutableStateOf(false) }
     var deleteChannelDialogVisible by remember { mutableStateOf(false) }
     var createGuildDialogVisible by remember { mutableStateOf(false) }
     var deleteGuildDialogVisible by remember { mutableStateOf(false) }
@@ -94,6 +98,12 @@ fun MainView(
         ) { name ->
             model.renameChannel(channelForRename!!.completeId(), name)
             channelForDeletion = null
+        }
+    }
+
+    if (createInviteDialogVisible) {
+        CreateInviteDialog(guildId = currentGuild!!.completeId()) {
+            createInviteDialogVisible = false
         }
     }
 
@@ -165,20 +175,25 @@ fun MainView(
                     isChannelSelected = { channel ->
                         channel.id == currentChannel?.id
                     },
-                    onCreateChannelClick = {
-                        createChannelDialogVisible = true
+                    onGuildMenuItemClick = { action ->
+                        when (action) {
+                            GuildMenuItemAction.CreateChannel -> createChannelDialogVisible = true
+                            GuildMenuItemAction.CreateInvite -> createInviteDialogVisible = true
+                            GuildMenuItemAction.DeleteGuild -> deleteGuildDialogVisible = true
+                        }
                     },
-                    onDeleteChannelClick = { channel ->
-                        channelForDeletion = channel
-                        deleteChannelDialogVisible = true
+                    onChannelMenuItemClick = { action, channel ->
+                        when (action) {
+                            ChannelMenuItemAction.Rename -> {
+                                channelForRename = channel
+                                renameChannelDialogVisible = true
+                            }
+                            ChannelMenuItemAction.Delete -> {
+                                channelForDeletion = channel
+                                deleteChannelDialogVisible = true
+                            }
+                        }
                     },
-                    onRenameChannelClick = { channel ->
-                        channelForRename = channel
-                        renameChannelDialogVisible = true
-                    },
-                    onDeleteGuildClick = {
-                        deleteGuildDialogVisible = true
-                    }
                 ) {
                     model.selectChannel(it)
                 }

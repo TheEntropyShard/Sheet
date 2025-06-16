@@ -20,33 +20,30 @@ package me.theentropyshard.sheet.view.guild.channel
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import me.theentropyshard.sheet.view.components.contextmenu.Separator
 import me.theentropyshard.sheet.view.components.contextmenu.menuItemHeight
 
-enum class GuildMenuItemAction {
-    CreateChannel,
-    CreateInvite,
-    DeleteGuild
+enum class ChannelMenuItemAction {
+    Rename,
+    Delete,
 }
 
 @Composable
-fun GuildMenu(
+fun ChannelItemMenu(
     modifier: Modifier = Modifier,
     visible: Boolean,
     onDismissRequest: () -> Unit,
-    onClick: (GuildMenuItemAction) -> Unit
+    onClick: (ChannelMenuItemAction) -> Unit
 ) {
     DropdownMenu(
-        modifier = modifier.width(200.dp),
+        modifier = modifier,
         expanded = visible,
         onDismissRequest = onDismissRequest
     ) {
@@ -54,35 +51,18 @@ fun GuildMenu(
             modifier = Modifier.fillMaxWidth().height(menuItemHeight),
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = ""
-                )
-            },
-            text = {
-                Text(text = "Create channel")
-            },
-            onClick = {
-                onDismissRequest()
-                onClick(GuildMenuItemAction.CreateChannel)
-            }
-        )
-
-        DropdownMenuItem(
-            modifier = Modifier.fillMaxWidth().height(menuItemHeight),
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.PersonAdd,
+                    imageVector = Icons.Filled.Edit,
                     contentDescription = ""
                 )
             },
             text = {
                 Text(
-                    text = "Create an invite"
+                    text = "Rename channel"
                 )
             },
             onClick = {
                 onDismissRequest()
-                onClick(GuildMenuItemAction.CreateInvite)
+                onClick(ChannelMenuItemAction.Rename)
             }
         )
 
@@ -99,13 +79,13 @@ fun GuildMenu(
             },
             text = {
                 Text(
-                    text = "Delete guild",
+                    text = "Delete channel",
                     color = MaterialTheme.colorScheme.error
                 )
             },
             onClick = {
                 onDismissRequest()
-                onClick(GuildMenuItemAction.DeleteGuild)
+                onClick(ChannelMenuItemAction.Delete)
             }
         )
     }

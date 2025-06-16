@@ -44,10 +44,8 @@ fun ChannelList(
     channels: List<PublicGuildTextChannel>,
     guildName: String,
     isChannelSelected: (PublicGuildTextChannel) -> Boolean,
-    onCreateChannelClick: () -> Unit,
-    onRenameChannelClick: (PublicGuildTextChannel) -> Unit,
-    onDeleteChannelClick: (PublicGuildTextChannel) -> Unit,
-    onDeleteGuildClick: () -> Unit,
+    onGuildMenuItemClick: (GuildMenuItemAction) -> Unit,
+    onChannelMenuItemClick: (ChannelMenuItemAction, PublicGuildTextChannel) -> Unit,
     onClick: (String) -> Unit
 ) {
     var menuVisible by remember { mutableStateOf(false) }
@@ -57,10 +55,8 @@ fun ChannelList(
         Column {
             GuildMenu(
                 visible = menuVisible,
-                onDismissRequest = { menuVisible = false },
-                onCreateChannelClick = onCreateChannelClick,
-                onDeleteGuildClick = onDeleteGuildClick,
-            )
+                onDismissRequest = { menuVisible = false }
+            ) { onGuildMenuItemClick(it) }
         }
 
         Column {
@@ -108,8 +104,7 @@ fun ChannelList(
                 items(channels) {
                     ChannelItem(
                         name = it.name,
-                        onRename = { onRenameChannelClick(it) },
-                        onDelete = { onDeleteChannelClick(it) },
+                        onMenuItemClick = { action -> onChannelMenuItemClick(action, it) },
                         selected = isChannelSelected(it)
                     ) { onClick(it.id) }
                 }

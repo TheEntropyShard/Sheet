@@ -21,12 +21,11 @@ package me.theentropyshard.sheet.view.guild.channel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -45,8 +44,7 @@ fun ChannelItem(
     modifier: Modifier = Modifier,
     name: String,
     selected: Boolean,
-    onRename: () -> Unit,
-    onDelete: () -> Unit,
+    onMenuItemClick: (ChannelMenuItemAction) -> Unit,
     onClick: () -> Unit
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -81,53 +79,11 @@ fun ChannelItem(
             },
         contentAlignment = Alignment.CenterStart
     ) {
-        DropdownMenu(
+        ChannelItemMenu(
             modifier = Modifier.width(200.dp),
-            expanded = menuShown,
+            visible = menuShown,
             onDismissRequest = { menuShown = false }
-        ) {
-            DropdownMenuItem(
-                modifier = Modifier.fillMaxWidth().height(32.dp),
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Edit,
-                        contentDescription = ""
-                    )
-                },
-                text = {
-                    Text(
-                        text = "Rename channel"
-                    )
-                },
-                onClick = {
-                    menuShown = false
-                    onRename()
-                }
-            )
-
-            Separator(color = MaterialTheme.colorScheme.surfaceContainerHighest)
-
-            DropdownMenuItem(
-                modifier = Modifier.fillMaxWidth().height(32.dp),
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Delete,
-                        tint = MaterialTheme.colorScheme.error,
-                        contentDescription = ""
-                    )
-                },
-                text = {
-                    Text(
-                        text = "Delete channel",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                },
-                onClick = {
-                    menuShown = false
-                    onDelete()
-                }
-            )
-        }
+        ) { onMenuItemClick(it) }
 
         Text(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
