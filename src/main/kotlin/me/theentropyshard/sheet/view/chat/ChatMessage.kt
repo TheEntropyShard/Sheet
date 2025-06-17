@@ -18,21 +18,30 @@
 
 package me.theentropyshard.sheet.view.chat
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.PointerMatcher
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerButton
+import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,22 +56,44 @@ import java.time.format.DateTimeFormatter
 
 private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss")
 private val pingColor = Color(0xFFFAD6A5)
+private val pingColorHover = Color(0xFFD1A364)
 
 private fun PublicMessage.isPing(user: String): Boolean {
     return this.content != null && this.content.startsWith("$user: ")
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatMessage(
     modifier: Modifier = Modifier,
     message: PublicMessage
 ) {
+    val source = remember { MutableInteractionSource() }
+    val isHovered by source.collectIsHoveredAsState()
+
+    var menuVisible by remember { mutableStateOf(false) }
+
     Row(
-        modifier = if (message.isPing(Sheet.user.name)) {
-            modifier.background(pingColor)
-        } else {
-            modifier
-        }
+        modifier = modifier
+            .background(
+                when {
+                    message.isPing(Sheet.user.name) && isHovered -> pingColorHover
+                    message.isPing(Sheet.user.name) -> pingColor
+                    isHovered -> MaterialTheme.colorScheme.surface
+                    else -> Color.Unspecified
+                }
+            )
+            .hoverable(source)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    matcher = PointerMatcher.pointer(
+                        pointerType = PointerType.Mouse,
+                        button = PointerButton.Secondary
+                    )
+                ) {
+                    menuVisible = true
+                }
+            }
     ) {
         Avatar()
 
@@ -72,6 +103,17 @@ fun ChatMessage(
             MessageHeader(authorId = message.authorId, date = message.published)
 
             MessageBody(message = message)
+        }
+
+        DropdownMenu(expanded = menuVisible, onDismissRequest = { menuVisible = false }) {
+            DropdownMenuItem(
+                text = {
+                    Text("Hello!")
+                },
+                onClick = {
+
+                }
+            )
         }
     }
 }
@@ -97,10 +139,14 @@ fun MessageHeader(
         Text(
             text = authorId.split("@")[0],
             fontWeight = FontWeight.SemiBold,
-            fontSize = 16.sp
+            fontSize = 16.0.sp,
+            style = MaterialTheme.typography.bodySmall
         )
 
-        Text(text = formatter.format(ZonedDateTime.parse(date).withZoneSameInstant(ZoneOffset.systemDefault())))
+        Text(
+            text = formatter.format(ZonedDateTime.parse(date).withZoneSameInstant(ZoneOffset.systemDefault())),
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 }
 
@@ -118,7 +164,10 @@ private fun MessageBody(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         if (message.hasText()) {
-            Text(text = message.content)
+            Text(
+                text = message.content,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
 
         if (message.hasAttachments()) {
