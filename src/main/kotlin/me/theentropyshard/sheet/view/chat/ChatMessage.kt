@@ -27,22 +27,27 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Forward
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.kamel.image.asyncPainterResource
@@ -50,6 +55,8 @@ import me.theentropyshard.sheet.Sheet
 import me.theentropyshard.sheet.api.model.PublicMessage
 import me.theentropyshard.sheet.view.chat.attachment.AttachmentItem
 import me.theentropyshard.sheet.view.components.NoMaxSizeImage
+import me.theentropyshard.sheet.view.components.contextmenu.Separator
+import me.theentropyshard.sheet.view.components.contextmenu.menuItemHeight
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -73,13 +80,15 @@ fun ChatMessage(
 
     var menuVisible by remember { mutableStateOf(false) }
 
+    var offset by remember { mutableStateOf(Offset.Zero) }
+
     Row(
         modifier = modifier
             .background(
                 when {
                     message.isPing(Sheet.user.name) && isHovered -> pingColorHover
                     message.isPing(Sheet.user.name) -> pingColor
-                    isHovered -> MaterialTheme.colorScheme.surface
+                    isHovered || menuVisible -> MaterialTheme.colorScheme.surface
                     else -> Color.Unspecified
                 }
             )
@@ -90,9 +99,13 @@ fun ChatMessage(
                         pointerType = PointerType.Mouse,
                         button = PointerButton.Secondary
                     )
-                ) {
+                ) { offs ->
+                    offset = offs - Offset(-5.0f, size.height.toFloat() - 5.0f)
                     menuVisible = true
                 }
+            }
+            .onGloballyPositioned { layoutCoordinates ->
+
             }
     ) {
         Avatar()
@@ -105,15 +118,86 @@ fun ChatMessage(
             MessageBody(message = message)
         }
 
-        DropdownMenu(expanded = menuVisible, onDismissRequest = { menuVisible = false }) {
-            DropdownMenuItem(
-                text = {
-                    Text("Hello!")
-                },
-                onClick = {
+        val density = LocalDensity.current
 
+        DisableSelection {
+            DropdownMenu(
+                expanded = menuVisible,
+                onDismissRequest = { menuVisible = false },
+                offset = with(density) {
+                    DpOffset(offset.x.toDp(), offset.y.toDp())
                 }
-            )
+            ) {
+                DropdownMenuItem(
+                    modifier = Modifier.height(menuItemHeight),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = "Edit message"
+                        )
+                    },
+                    text = {
+                        Text("Edit")
+                    },
+                    onClick = {
+
+                    }
+                )
+
+                DropdownMenuItem(
+                    modifier = Modifier.height(menuItemHeight),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Forward,
+                            contentDescription = "Forward message"
+                        )
+                    },
+                    text = {
+                        Text("Forward")
+                    },
+                    onClick = {
+
+                    }
+                )
+
+                DropdownMenuItem(
+                    modifier = Modifier.height(menuItemHeight),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ContentCopy,
+                            contentDescription = "Copy message text"
+                        )
+                    },
+                    text = {
+                        Text("Copy Text")
+                    },
+                    onClick = {
+
+                    }
+                )
+
+                Separator(color = MaterialTheme.colorScheme.surfaceContainerHighest)
+
+                DropdownMenuItem(
+                    modifier = Modifier.height(menuItemHeight),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = "Delete message",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = "Delete",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    onClick = {
+
+                    }
+                )
+            }
         }
     }
 }
