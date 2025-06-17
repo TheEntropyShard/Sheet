@@ -19,7 +19,6 @@
 package me.theentropyshard.sheet.view.chat.attachment
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -37,13 +36,11 @@ fun AttachmentItem(
     modifier: Modifier = Modifier,
     name: String,
     size: Long? = null,
-    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .clickable { onClick() }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

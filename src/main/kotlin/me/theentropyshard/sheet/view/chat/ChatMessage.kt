@@ -21,6 +21,7 @@ package me.theentropyshard.sheet.view.chat
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.PointerMatcher
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -47,13 +48,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.kamel.image.asyncPainterResource
 import me.theentropyshard.sheet.Sheet
 import me.theentropyshard.sheet.api.model.PublicMessage
-import me.theentropyshard.sheet.view.chat.attachment.AttachmentItem
+import me.theentropyshard.sheet.utils.painterResource
 import me.theentropyshard.sheet.view.components.NoMaxSizeImage
 import me.theentropyshard.sheet.view.components.contextmenu.Separator
 import me.theentropyshard.sheet.view.components.contextmenu.menuItemHeight
@@ -311,10 +313,35 @@ fun FileAttachment(
     size: Long,
     onClick: () -> Unit
 ) {
-    AttachmentItem(
-        modifier = modifier,
-        name = name,
-        size = size,
-        onClick = onClick
-    )
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .clickable { onClick() }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource("/icons/draft_24px.xml"),
+            contentDescription = ""
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Column(verticalArrangement = Arrangement.SpaceEvenly) {
+            Text(
+                text = name,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            Text(
+                text = "$size B",
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
 }
