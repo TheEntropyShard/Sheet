@@ -16,51 +16,44 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.theentropyshard.sheet.view.guild.dialog
+package me.theentropyshard.sheet.view.dialog
 
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun InputDialog(
+fun ConfirmDialog(
     modifier: Modifier = Modifier,
     title: String,
-    label: String,
-    placeholder: String,
-    initial: String = "",
-    onDismissRequest: () -> Unit,
-    onNameSubmitted: (String) -> Unit
+    text: String,
+    onClick: (Boolean) -> Unit
 ) {
-    var text by remember { mutableStateOf(initial) }
-
     AlertDialog(
         modifier = modifier,
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = { false },
         title = {
             Text(text = title)
         },
         text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                singleLine = true,
-                label = {
-                    Text(text = label)
-                },
-                placeholder = {
-                    Text(text = placeholder)
+            Text(text = text)
+        },
+        dismissButton = {
+            Button(
+                onClick = {
+                    onClick(false)
                 }
-            )
+            ) {
+                Text(text = "No")
+            }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    onDismissRequest()
-                    onNameSubmitted(text)
+                    onClick(true)
                 }
             ) {
-                Text(text = "Create")
+                Text(text = "Yes")
             }
         },
     )

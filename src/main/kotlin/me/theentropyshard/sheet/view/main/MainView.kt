@@ -29,11 +29,12 @@ import me.theentropyshard.sheet.FileDialog
 import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 import me.theentropyshard.sheet.view.chat.ChatView
 import me.theentropyshard.sheet.view.chat.attachment.AttachmentDialog
-import me.theentropyshard.sheet.view.guild.channel.ChannelMenuItemAction
+import me.theentropyshard.sheet.view.dialog.ConfirmDialog
+import me.theentropyshard.sheet.view.dialog.InputDialog
 import me.theentropyshard.sheet.view.guild.channel.ChannelList
+import me.theentropyshard.sheet.view.guild.channel.ChannelMenuItemAction
 import me.theentropyshard.sheet.view.guild.channel.GuildMenuItemAction
-import me.theentropyshard.sheet.view.guild.dialog.ConfirmDialog
-import me.theentropyshard.sheet.view.guild.dialog.InputDialog
+import me.theentropyshard.sheet.view.guild.dialog.JoinOrCreateGuildDialog
 import me.theentropyshard.sheet.view.guild.invite.CreateInviteDialog
 import me.theentropyshard.sheet.view.guild.list.GuildList
 import me.theentropyshard.sheet.view.guild.members.MemberList
@@ -122,14 +123,7 @@ fun MainView(
     }
 
     if (createGuildDialogVisible) {
-        InputDialog(
-            title = "Create a new guild",
-            label = "Guild name",
-            placeholder = "Enter guild name...",
-            onDismissRequest = { createGuildDialogVisible = false }
-        ) { name ->
-            model.createGuild(name)
-        }
+        JoinOrCreateGuildDialog { createGuildDialogVisible = false }
     }
 
     if (deleteGuildDialogVisible) {
@@ -168,34 +162,37 @@ fun MainView(
             Spacer(modifier = Modifier.width(16.dp))
 
             key(channels) {
-                ChannelList(
-                    modifier = Modifier.fillMaxHeight().width(200.dp),
-                    channels = channels.filter { channel -> channel.guildId == currentGuild?.completeId() },
-                    guildName = currentGuild!!.name,
-                    isChannelSelected = { channel ->
-                        channel.id == currentChannel?.id
-                    },
-                    onGuildMenuItemClick = { action ->
-                        when (action) {
-                            GuildMenuItemAction.CreateChannel -> createChannelDialogVisible = true
-                            GuildMenuItemAction.CreateInvite -> createInviteDialogVisible = true
-                            GuildMenuItemAction.DeleteGuild -> deleteGuildDialogVisible = true
-                        }
-                    },
-                    onChannelMenuItemClick = { action, channel ->
-                        when (action) {
-                            ChannelMenuItemAction.Rename -> {
-                                channelForRename = channel
-                                renameChannelDialogVisible = true
+                if (currentGuild != null) {
+                    ChannelList(
+                        modifier = Modifier.fillMaxHeight().width(200.dp),
+                        channels = channels.filter { channel -> channel.guildId == currentGuild?.completeId() },
+                        guildName = currentGuild!!.name,
+                        isChannelSelected = { channel ->
+                            channel.id == currentChannel?.id
+                        },
+                        onGuildMenuItemClick = { action ->
+                            when (action) {
+                                GuildMenuItemAction.CreateChannel -> createChannelDialogVisible = true
+                                GuildMenuItemAction.CreateInvite -> createInviteDialogVisible = true
+                                GuildMenuItemAction.DeleteGuild -> deleteGuildDialogVisible = true
                             }
-                            ChannelMenuItemAction.Delete -> {
-                                channelForDeletion = channel
-                                deleteChannelDialogVisible = true
+                        },
+                        onChannelMenuItemClick = { action, channel ->
+                            when (action) {
+                                ChannelMenuItemAction.Rename -> {
+                                    channelForRename = channel
+                                    renameChannelDialogVisible = true
+                                }
+
+                                ChannelMenuItemAction.Delete -> {
+                                    channelForDeletion = channel
+                                    deleteChannelDialogVisible = true
+                                }
                             }
-                        }
-                    },
-                ) {
-                    model.selectChannel(it)
+                        },
+                    ) {
+                        model.selectChannel(it)
+                    }
                 }
             }
 

@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.theentropyshard.sheet.view.guild.dialog
+package me.theentropyshard.sheet.view.dialog
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable

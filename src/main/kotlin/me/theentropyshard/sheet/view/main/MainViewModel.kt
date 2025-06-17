@@ -166,6 +166,9 @@ class MainViewModel : ViewModel() {
                         val channel = gson.fromJson(message["d"].asJsonObject["channel"], PublicGuildTextChannel::class)
                         channel.guildId += "@${channel.domain}"
 
+                        val guild = _guilds.value.find { guild -> guild.completeId() == channel.guildId }!!
+                        guild.channels.add(channel)
+
                         _channels.update { channels -> channels + channel }
                         _currentChannel.update { channel }
                     }
@@ -251,8 +254,11 @@ class MainViewModel : ViewModel() {
                     val guilds = gson.fromJson<List<PublicGuild>>(response.body!!.string(), type)
 
                     _guilds.value = guilds
-                    _currentGuild.value = guilds[0]
-                    _currentChannel.value = _currentGuild.value!!.channels[0]
+
+                    if (guilds.isNotEmpty()) {
+                        _currentGuild.value = guilds[0]
+                        _currentChannel.value = _currentGuild.value!!.channels[0]
+                    }
 
                     _isLoadingInitial.value = false
                 }
@@ -364,29 +370,6 @@ class MainViewModel : ViewModel() {
                 .url("${instance}/channel/$channelId")
                 .header("Authorization", "Bearer $token")
                 .patch(data.toRequestBody())
-                .build()
-
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    e.printStackTrace()
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    response.use { }
-                }
-            })
-        }
-    }
-
-    fun createGuild(name: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val data = JsonObject()
-            data.addProperty("name", name)
-
-            val request = Request.Builder()
-                .url("${instance}/guild")
-                .header("Authorization", "Bearer $token")
-                .post(data.toRequestBody())
                 .build()
 
             httpClient.newCall(request).enqueue(object : Callback {
