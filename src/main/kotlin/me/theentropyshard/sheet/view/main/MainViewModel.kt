@@ -185,6 +185,10 @@ class MainViewModel : ViewModel() {
                         }
                     }
 
+                    "CHANNEL_UPDATE" -> {
+
+                    }
+
                     "MEMBERS_CHUNK" -> {
                         val array = message["d"].asJsonObject["items"].asJsonArray
 
