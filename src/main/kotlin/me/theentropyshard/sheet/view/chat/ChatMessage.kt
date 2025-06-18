@@ -298,21 +298,28 @@ private fun ImageAttachment(
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
-        NoMaxSizeImage(
-            modifier = Modifier.padding(6.dp).clip(RoundedCornerShape(6.dp)),
-            contentDescription = name,
-            resource = {
-                asyncPainterResource(data = "${Sheet.instance}/channel/$channelId/attachments/$hash")
-            },
-            onLoading = {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            },
-            onFailure = { throwable ->
-                Text(text = "Error: cannot load the image: ${throwable.toString()}")
-            }
-        )
+        Box(
+            modifier = Modifier
+                .padding(8.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(if (isSystemInDarkTheme()) Color.Black else Color.White)
+        ) {
+            NoMaxSizeImage(
+                modifier = Modifier.clip(RoundedCornerShape(6.dp)),
+                contentDescription = name,
+                resource = {
+                    asyncPainterResource(data = "${Sheet.instance}/channel/$channelId/attachments/$hash")
+                },
+                onLoading = {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                },
+                onFailure = { throwable ->
+                    Text(text = "Error: cannot load the image: ${throwable.toString()}")
+                }
+            )
+        }
     }
 }
 
