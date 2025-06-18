@@ -39,7 +39,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.*
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -89,6 +88,7 @@ fun ChatMessage(
                 }
             )
             .hoverable(source)
+            .padding(8.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
                     matcher = PointerMatcher.pointer(
@@ -99,9 +99,6 @@ fun ChatMessage(
                     offset = offs - Offset(-5.0f, size.height.toFloat() - 5.0f)
                     menuVisible = true
                 }
-            }
-            .onGloballyPositioned { layoutCoordinates ->
-
             }
     ) {
         Avatar()
@@ -259,9 +256,9 @@ private fun MessageBody(
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
-
         if (message.hasAttachments()) {
+            Spacer(modifier = Modifier.height(6.dp))
+
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (attachment in message.files) {
                     if (attachment.type.startsWith("image/")) {
