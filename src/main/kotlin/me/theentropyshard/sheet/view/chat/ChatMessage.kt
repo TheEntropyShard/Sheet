@@ -26,10 +26,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Forward
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -39,10 +35,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.*
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.kamel.image.asyncPainterResource
@@ -50,8 +44,6 @@ import me.theentropyshard.sheet.Sheet
 import me.theentropyshard.sheet.api.model.PublicMessage
 import me.theentropyshard.sheet.utils.painterResource
 import me.theentropyshard.sheet.view.components.NoMaxSizeImage
-import me.theentropyshard.sheet.view.components.contextmenu.Separator
-import me.theentropyshard.sheet.view.components.contextmenu.menuItemHeight
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -68,7 +60,8 @@ private fun PublicMessage.isPing(user: String): Boolean {
 @Composable
 fun ChatMessage(
     modifier: Modifier = Modifier,
-    message: PublicMessage
+    message: PublicMessage,
+    onContextMenuAction: (MessageContextMenuAction, PublicMessage) -> Unit
 ) {
     val source = remember { MutableInteractionSource() }
     val isHovered by source.collectIsHoveredAsState()
@@ -111,86 +104,21 @@ fun ChatMessage(
             MessageBody(message = message)
         }
 
-        val density = LocalDensity.current
-
         DisableSelection {
-            DropdownMenu(
-                expanded = menuVisible,
+            MessageContextMenu(
+                visible = menuVisible,
                 onDismissRequest = { menuVisible = false },
-                offset = with(density) {
-                    DpOffset(offset.x.toDp(), offset.y.toDp())
-                }
-            ) {
-                DropdownMenuItem(
-                    modifier = Modifier.height(menuItemHeight),
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = "Edit message"
-                        )
-                    },
-                    text = {
-                        Text("Edit")
-                    },
-                    onClick = {
-
+                position = offset,
+                isActionEnabled = { action ->
+                    when (action) {
+                        MessageContextMenuAction.Edit -> false
+                        MessageContextMenuAction.Forward -> false
+                        MessageContextMenuAction.CopyText -> message.hasText()
+                        MessageContextMenuAction.Delete -> true
                     }
-                )
-
-                DropdownMenuItem(
-                    modifier = Modifier.height(menuItemHeight),
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Forward,
-                            contentDescription = "Forward message"
-                        )
-                    },
-                    text = {
-                        Text("Forward")
-                    },
-                    onClick = {
-
-                    }
-                )
-
-                DropdownMenuItem(
-                    modifier = Modifier.height(menuItemHeight),
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.ContentCopy,
-                            contentDescription = "Copy message text"
-                        )
-                    },
-                    text = {
-                        Text("Copy Text")
-                    },
-                    onClick = {
-
-                    }
-                )
-
-                Separator(color = MaterialTheme.colorScheme.surfaceContainerHighest)
-
-                DropdownMenuItem(
-                    modifier = Modifier.height(menuItemHeight),
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.Delete,
-                            contentDescription = "Delete message",
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    },
-                    text = {
-                        Text(
-                            text = "Delete",
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    },
-                    onClick = {
-
-                    }
-                )
-            }
+                },
+                onClick = { onContextMenuAction(it, message) }
+            )
         }
     }
 }

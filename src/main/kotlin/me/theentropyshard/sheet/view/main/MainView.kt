@@ -22,12 +22,16 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.awtClipboard
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.theentropyshard.sheet.FileDialog
 import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 import me.theentropyshard.sheet.view.chat.ChatView
+import me.theentropyshard.sheet.view.chat.MessageContextMenuAction
 import me.theentropyshard.sheet.view.chat.attachment.AttachmentDialog
 import me.theentropyshard.sheet.view.dialog.ConfirmDialog
 import me.theentropyshard.sheet.view.dialog.InputDialog
@@ -38,9 +42,10 @@ import me.theentropyshard.sheet.view.guild.dialog.JoinOrCreateGuildDialog
 import me.theentropyshard.sheet.view.guild.invite.CreateInviteDialog
 import me.theentropyshard.sheet.view.guild.list.GuildList
 import me.theentropyshard.sheet.view.guild.members.MemberList
+import java.awt.datatransfer.StringSelection
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun MainView(
     modifier: Modifier = Modifier,
@@ -56,6 +61,7 @@ fun MainView(
 
     val scope = rememberCoroutineScope()
     val state = rememberLazyListState()
+    val clipboard = LocalClipboard.current
 
     LaunchedEffect(Unit) {
         model.loadGuilds()
@@ -211,6 +217,20 @@ fun MainView(
                         .reversed(),
                     onAddAttachmentClick = {
                         isFileChooserOpen = true
+                    },
+                    onContextMenuAction = { action, message ->
+                        when (action) {
+                            MessageContextMenuAction.Edit -> {}
+                            MessageContextMenuAction.Forward -> {}
+                            MessageContextMenuAction.CopyText -> {
+                                clipboard.awtClipboard!!.setContents(
+                                    StringSelection(message.content), null
+                                )
+                            }
+                            MessageContextMenuAction.Delete -> {
+                                model.deleteMessage(currentChannel!!.completeId(), message.id)
+                            }
+                        }
                     }
                 ) { message ->
                     model.sendMessage(message)
@@ -226,7 +246,9 @@ fun MainView(
             }
 
             if (isAttachmentOpen) {
-                AttachmentDialog(currentChannel!!.completeId(), selectedFiles = selectedFiles) { isAttachmentOpen = false }
+                AttachmentDialog(currentChannel!!.completeId(), selectedFiles = selectedFiles) {
+                    isAttachmentOpen = false
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))

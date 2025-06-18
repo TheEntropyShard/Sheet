@@ -44,6 +44,7 @@ fun ChatView(
     state: LazyListState,
     messages: List<PublicMessage>,
     onAddAttachmentClick: () -> Unit,
+    onContextMenuAction: (MessageContextMenuAction, PublicMessage) -> Unit,
     onSendMessage: (String) -> Unit
 ) {
     Column(modifier = modifier) {
@@ -60,7 +61,8 @@ fun ChatView(
                 items(messages) {
                     ChatMessage(
                         modifier = Modifier.fillMaxWidth(),
-                        message = it
+                        message = it,
+                        onContextMenuAction = onContextMenuAction
                     )
                 }
             }

@@ -142,6 +142,20 @@ class MainViewModel : ViewModel() {
                         _messages.update { list -> listOf(shootMessage) + list }
                     }
 
+                    "MESSAGE_DELETE" -> {
+                        val channelId = message["d"].asJsonObject["channel_id"].asString
+                        val messageId = message["d"].asJsonObject["message_id"].asString
+
+                        val shootMessage = _messages.value.find { message ->
+                            message.channelId == _channels.value.find { channel ->
+                                channel.id == channelId }?.completeId() && message.id == messageId
+                        }
+
+                        if (shootMessage != null) {
+                            _messages.update { list -> list - shootMessage }
+                        }
+                    }
+
                     "RELATIONSHIP_CREATE" -> {
                         println("warn: unhandled message: RELATIONSHIP_CREATE")
                     }
