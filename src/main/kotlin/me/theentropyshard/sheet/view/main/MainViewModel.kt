@@ -38,10 +38,13 @@ import me.theentropyshard.sheet.api.model.PublicMessage
 import me.theentropyshard.sheet.fromJson
 import me.theentropyshard.sheet.toRequestBody
 import okhttp3.*
+import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.util.*
 
 class MainViewModel : ViewModel() {
+    private val logger = LogManager.getLogger()
+
     private val _isLoadingInitial = MutableStateFlow(true)
     val isLoadingInitial = _isLoadingInitial.asStateFlow()
 
@@ -253,10 +256,16 @@ class MainViewModel : ViewModel() {
 
             httpClient.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    e.printStackTrace()
+                    logger.error("Failed to send request for to load guilds", e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to load guilds: {}", response.body!!.string())
+
+                        return
+                    }
+
                     val type = object : TypeToken<List<PublicGuild>>() {}.type
                     val guilds = gson.fromJson<List<PublicGuild>>(response.body!!.string(), type)
 
@@ -286,11 +295,13 @@ class MainViewModel : ViewModel() {
 
             httpClient.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    e.printStackTrace()
+                    logger.error("Failed to send request for to send message", e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    response.use { }
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to send message: {}", response.body!!.string())
+                    }
                 }
             })
         }
@@ -358,11 +369,13 @@ class MainViewModel : ViewModel() {
 
             httpClient.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    e.printStackTrace()
+                    logger.error("Failed to send request for to create channel", e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    response.use { }
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to create channel: {}", response.body!!.string())
+                    }
                 }
             })
         }
@@ -381,11 +394,13 @@ class MainViewModel : ViewModel() {
 
             httpClient.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    e.printStackTrace()
+                    logger.error("Failed to send request for to rename channel", e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    response.use { }
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to rename channel: {}", response.body!!.string())
+                    }
                 }
             })
         }
@@ -401,11 +416,13 @@ class MainViewModel : ViewModel() {
 
             httpClient.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    e.printStackTrace()
+                    logger.error("Failed to send request for to delete guild", e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    response.use { }
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to delete guild: {}", response.body!!.string())
+                    }
                 }
             })
         }
@@ -421,11 +438,35 @@ class MainViewModel : ViewModel() {
 
             httpClient.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    e.printStackTrace()
+                    logger.error("Failed to send request for to delete channel", e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    response.use { }
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to delete channel: {}", response.body!!.string())
+                    }
+                }
+            })
+        }
+    }
+
+    fun deleteMessage(channelId: String, id: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${instance}/channel/$channelId/messages/$id")
+                .header("Authorization", "Bearer $token")
+                .delete()
+                .build()
+
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    logger.error("Failed to send request for to delete message", e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to delete message: {}", response.body!!.string())
+                    }
                 }
             })
         }
