@@ -246,8 +246,7 @@ private fun MessageBody(
     }
 
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = modifier
     ) {
         if (message.hasText()) {
             Text(
@@ -256,19 +255,26 @@ private fun MessageBody(
             )
         }
 
-        if (message.hasAttachments()) {
-            for (attachment in message.files) {
-                if (attachment.type.startsWith("image/")) {
-                    ImageAttachment(
-                        name = attachment.name,
-                        hash = attachment.hash,
-                        channelId = message.channelId
-                    )
+        Spacer(modifier = Modifier.height(6.dp))
 
-                    // TODO: download image
-                } else {
-                    FileAttachment(name = attachment.name, size = attachment.size) {
-                        // TODO: download file
+        if (message.hasAttachments()) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (attachment in message.files) {
+                    if (attachment.type.startsWith("image/")) {
+                        ImageAttachment(
+                            name = attachment.name,
+                            hash = attachment.hash,
+                            channelId = message.channelId
+                        )
+
+                        // TODO: download image
+                    } else {
+                        FileAttachment(
+                            name = attachment.name,
+                            size = attachment.size
+                        ) {
+                            // TODO: download file
+                        }
                     }
                 }
             }
