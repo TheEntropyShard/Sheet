@@ -18,12 +18,8 @@
 
 package me.theentropyshard.sheet.view.chat
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.PointerMatcher
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
@@ -42,9 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerButton
-import androidx.compose.ui.input.pointer.PointerType
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -208,7 +202,17 @@ fun ChatMessage(
 private fun Avatar(
     modifier: Modifier = Modifier
 ) {
-    Icon(imageVector = Icons.Filled.Person, contentDescription = "")
+    Box(
+        modifier = modifier
+            .size(36.dp)
+            .clip(RoundedCornerShape(50))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .pointerHoverIcon(icon = PointerIcon.Hand)
+            .clickable { },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(imageVector = Icons.Filled.Person, contentDescription = "")
+    }
 }
 
 @Composable
