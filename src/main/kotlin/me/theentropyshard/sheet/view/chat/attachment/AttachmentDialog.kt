@@ -24,6 +24,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,13 +35,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
+import me.theentropyshard.sheet.FileDialog
+import java.io.File
 
 @Composable
 fun AttachmentDialog(
-    selectedFiles: List<String>,
+    channelId: String,
+    selectedFiles: List<File>,
     onDismissRequest: () -> Unit
 ) {
+    val model = viewModel { AttachmentDialogViewModel() }
+    val files by model.files.collectAsState()
+    val count by model.count.collectAsState()
+
+    LaunchedEffect(selectedFiles) {
+        model.setFiles(selectedFiles)
+    }
+
     var caption by remember { mutableStateOf("") }
+    var isFileChooserOpen by remember { mutableStateOf(false) }
+
+    if (isFileChooserOpen) {
+        FileDialog { files ->
+            isFileChooserOpen = false
+            model.addFiles(files)
+        }
+    }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
@@ -55,7 +77,7 @@ fun AttachmentDialog(
             ) {
                 Text(
                     modifier = Modifier.padding(start = 8.dp, top = 8.dp, end = 8.dp).align(Alignment.Start),
-                    text = "${selectedFiles.size} ${if (selectedFiles.size % 10 == 1) "file" else "files"} selected",
+                    text = "$count ${if (count % 10 == 1) "file" else "files"} selected",
                     fontSize = 22.sp
                 )
 
@@ -66,8 +88,12 @@ fun AttachmentDialog(
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(selectedFiles) {
-                        AttachmentItem(modifier = Modifier.fillMaxWidth(), name = it.substringAfterLast('\\'))
+                    items(files) {
+                        AttachmentItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            name = it.name.substringAfterLast('\\'),
+                            size = it.length()
+                        )
                     }
                 }
 
@@ -82,7 +108,7 @@ fun AttachmentDialog(
 
                 Row(modifier = Modifier.fillMaxWidth()) {
                     TextButton(
-                        onClick = { onDismissRequest() },
+                        onClick = { isFileChooserOpen = true },
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text("Add")
@@ -98,7 +124,7 @@ fun AttachmentDialog(
                     }
 
                     TextButton(
-                        onClick = { onDismissRequest() },
+                        onClick = { model.send(channelId, caption); onDismissRequest() },
                         modifier = Modifier.padding(8.dp),
                     ) {
                         Text("Send")

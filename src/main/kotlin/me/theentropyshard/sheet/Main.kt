@@ -47,6 +47,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.WebSocket
 import java.awt.FileDialog
 import java.awt.Frame
+import java.io.File
 import kotlin.reflect.KClass
 
 object Sheet {
@@ -149,7 +150,7 @@ fun main() = application {
 }
 
 @Composable
-fun FileDialog(onCloseRequest: (result: List<String>) -> Unit) {
+fun FileDialog(onCloseRequest: (result: List<File>) -> Unit) {
     AwtWindow(
         create = {
             object : FileDialog(parent, "Choose a file", LOAD) {
@@ -157,7 +158,7 @@ fun FileDialog(onCloseRequest: (result: List<String>) -> Unit) {
                     super.setVisible(value)
 
                     if (value) {
-                        onCloseRequest(files.map { file -> file.absolutePath })
+                        onCloseRequest(files.map { file -> file.absoluteFile })
                     }
                 }
             }.apply {

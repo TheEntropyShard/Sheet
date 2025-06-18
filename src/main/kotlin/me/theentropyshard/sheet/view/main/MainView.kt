@@ -38,6 +38,7 @@ import me.theentropyshard.sheet.view.guild.dialog.JoinOrCreateGuildDialog
 import me.theentropyshard.sheet.view.guild.invite.CreateInviteDialog
 import me.theentropyshard.sheet.view.guild.list.GuildList
 import me.theentropyshard.sheet.view.guild.members.MemberList
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -200,7 +201,7 @@ fun MainView(
 
             var isFileChooserOpen by remember { mutableStateOf(false) }
             var isAttachmentOpen by remember { mutableStateOf(false) }
-            var selectedFiles by remember { mutableStateOf(listOf<String>()) }
+            var selectedFiles by remember { mutableStateOf(listOf<File>()) }
 
             key(currentChannel) {
                 ChatView(
@@ -218,7 +219,6 @@ fun MainView(
 
             if (isFileChooserOpen) {
                 FileDialog { files ->
-                    println(files)
                     isFileChooserOpen = false
                     isAttachmentOpen = true
                     selectedFiles = files
@@ -226,7 +226,7 @@ fun MainView(
             }
 
             if (isAttachmentOpen) {
-                AttachmentDialog(selectedFiles = selectedFiles) { isAttachmentOpen = false }
+                AttachmentDialog(currentChannel!!.completeId(), selectedFiles = selectedFiles) { isAttachmentOpen = false }
             }
 
             Spacer(modifier = Modifier.width(16.dp))

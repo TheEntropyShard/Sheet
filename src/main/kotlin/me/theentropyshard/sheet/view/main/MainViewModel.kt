@@ -97,7 +97,10 @@ class MainViewModel : ViewModel() {
                 val seq = sequence++
 
                 val message = gson.fromJson(text, JsonObject::class.java)
-                println(message)
+
+                if (message["t"].asString != "HEARTBEAT_ACK") {
+                    println(message)
+                }
 
                 when (message["t"].asString) {
                     "READY" -> {

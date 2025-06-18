@@ -55,7 +55,7 @@ internal fun rememberBitmapResource(path: String): Painter {
     return remember(path) { BitmapPainter(readResourceBytes(path).decodeToImageBitmap()) }
 }
 
-private object ResourceLoader
+object ResourceLoader
 
-private fun readResourceBytes(resourcePath: String) =
+fun readResourceBytes(resourcePath: String): ByteArray =
     ResourceLoader.javaClass.getResourceAsStream(resourcePath)!!.readAllBytes()
