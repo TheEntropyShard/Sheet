@@ -38,6 +38,8 @@ import me.theentropyshard.sheet.view.dialog.ConfirmDialog
 import me.theentropyshard.sheet.view.dialog.InputDialog
 import me.theentropyshard.sheet.view.guild.channel.ChannelList
 import me.theentropyshard.sheet.view.guild.channel.ChannelMenuItemAction
+import me.theentropyshard.sheet.view.guild.channel.GuildHeader
+import me.theentropyshard.sheet.view.guild.channel.GuildMenu
 import me.theentropyshard.sheet.view.guild.channel.GuildMenuItemAction
 import me.theentropyshard.sheet.view.guild.dialog.JoinOrCreateGuildDialog
 import me.theentropyshard.sheet.view.guild.invite.CreateInviteDialog
@@ -170,37 +172,52 @@ fun MainView(
 
             Spacer(modifier = Modifier.width(16.dp))
 
+            var menuVisible by remember { mutableStateOf(false) }
+
             key(channels) {
                 if (currentGuild != null) {
-                    ChannelList(
-                        modifier = Modifier.fillMaxHeight().width(200.dp),
-                        channels = channels.filter { channel -> channel.guildId == currentGuild?.completeId() },
-                        guildName = currentGuild!!.name,
-                        isChannelSelected = { channel ->
-                            channel.id == currentChannel?.id
-                        },
-                        onGuildMenuItemClick = { action ->
-                            when (action) {
-                                GuildMenuItemAction.CreateChannel -> createChannelDialogVisible = true
-                                GuildMenuItemAction.CreateInvite -> createInviteDialogVisible = true
-                                GuildMenuItemAction.DeleteGuild -> deleteGuildDialogVisible = true
-                            }
-                        },
-                        onChannelMenuItemClick = { action, channel ->
-                            when (action) {
-                                ChannelMenuItemAction.Rename -> {
-                                    channelForRename = channel
-                                    renameChannelDialogVisible = true
+                    Box(modifier = modifier, contentAlignment = Alignment.TopStart) {
+                        Column {
+                            GuildMenu(
+                                visible = menuVisible,
+                                onDismissRequest = { menuVisible = false }
+                            ) { action ->
+                                when (action) {
+                                    GuildMenuItemAction.CreateChannel -> createChannelDialogVisible = true
+                                    GuildMenuItemAction.CreateInvite -> createInviteDialogVisible = true
+                                    GuildMenuItemAction.DeleteGuild -> deleteGuildDialogVisible = true
                                 }
+                            }
+                        }
+                        ChannelList(
+                            modifier = Modifier.fillMaxHeight().width(200.dp),
+                            header = {
+                                GuildHeader(
+                                    guildName = currentGuild!!.name,
+                                    menuVisible = menuVisible,
+                                    onClick = { menuVisible = true }
+                                )
+                            },
+                            channels = channels.filter { channel -> channel.guildId == currentGuild?.completeId() },
+                            isChannelSelected = { channel ->
+                                channel.id == currentChannel?.id
+                            },
+                            onChannelMenuItemClick = { action, channel ->
+                                when (action) {
+                                    ChannelMenuItemAction.Rename -> {
+                                        channelForRename = channel
+                                        renameChannelDialogVisible = true
+                                    }
 
-                                ChannelMenuItemAction.Delete -> {
-                                    channelForDeletion = channel
-                                    deleteChannelDialogVisible = true
+                                    ChannelMenuItemAction.Delete -> {
+                                        channelForDeletion = channel
+                                        deleteChannelDialogVisible = true
+                                    }
                                 }
-                            }
-                        },
-                    ) {
-                        model.selectChannel(it)
+                            },
+                        ) {
+                            model.selectChannel(it)
+                        }
                     }
                 }
             }

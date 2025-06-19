@@ -18,96 +18,47 @@
 
 package me.theentropyshard.sheet.view.guild.channel
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
 import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 
 @Composable
 fun ChannelList(
     modifier: Modifier = Modifier,
+    header: @Composable () -> Unit,
     channels: List<PublicGuildTextChannel>,
-    guildName: String,
     isChannelSelected: (PublicGuildTextChannel) -> Boolean,
-    onGuildMenuItemClick: (GuildMenuItemAction) -> Unit,
     onChannelMenuItemClick: (ChannelMenuItemAction, PublicGuildTextChannel) -> Unit,
     onClick: (String) -> Unit
 ) {
-    var menuVisible by remember { mutableStateOf(false) }
-    val rotation by animateFloatAsState(targetValue = if (menuVisible) 270f else 90f)
+    Column(modifier = modifier) {
+        header()
 
-    Box(modifier = modifier, contentAlignment = Alignment.TopStart) {
-        Column {
-            GuildMenu(
-                visible = menuVisible,
-                onDismissRequest = { menuVisible = false }
-            ) { onGuildMenuItemClick(it) }
-        }
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Column {
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                    .fillMaxWidth()
-                    .pointerHoverIcon(icon = PointerIcon.Hand)
-                    .clickable { menuVisible = !menuVisible }
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    text = guildName
-                )
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            thickness = 2.dp,
+            color = MaterialTheme.colorScheme.surfaceContainer
+        )
 
-                Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-                Icon(
-                    modifier = Modifier.graphicsLayer {
-                        rotationZ = rotation
-                    },
-                    imageVector = Icons.Filled.ChevronRight,
-                    contentDescription = ""
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            HorizontalDivider(
-                modifier = Modifier.fillMaxWidth(),
-                thickness = 2.dp,
-                color = MaterialTheme.colorScheme.surfaceContainer
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(channels) {
-                    ChannelItem(
-                        name = it.name,
-                        onMenuItemClick = { action -> onChannelMenuItemClick(action, it) },
-                        selected = isChannelSelected(it)
-                    ) { onClick(it.id) }
-                }
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(channels) {
+                ChannelItem(
+                    name = it.name,
+                    onMenuItemClick = { action -> onChannelMenuItemClick(action, it) },
+                    selected = isChannelSelected(it)
+                ) { onClick(it.id) }
             }
         }
     }
