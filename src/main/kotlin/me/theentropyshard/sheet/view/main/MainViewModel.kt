@@ -38,6 +38,7 @@ import me.theentropyshard.sheet.api.model.PublicMessage
 import me.theentropyshard.sheet.fromJson
 import me.theentropyshard.sheet.toRequestBody
 import okhttp3.*
+import okhttp3.internal.closeQuietly
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.util.*
@@ -239,13 +240,13 @@ class MainViewModel : ViewModel() {
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 when (code) {
-                    1000 -> println("WebSocket was closed successfully")
-                    else -> println("WebSocket was closed with code $code because $reason")
+                    1000 -> logger.info("WebSocket was closed successfully")
+                    else -> logger.error("WebSocket was closed with code $code because $reason")
                 }
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                t.printStackTrace()
+                logger.error("WebSocket failure", t)
             }
         }
 
@@ -276,6 +277,8 @@ class MainViewModel : ViewModel() {
                 override fun onResponse(call: Call, response: Response) {
                     if (!response.isSuccessful) {
                         logger.error("Failed to load guilds: {}", response.body!!.string())
+
+                        response.closeQuietly()
 
                         return
                     }
@@ -309,13 +312,15 @@ class MainViewModel : ViewModel() {
 
             httpClient.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request for to send message", e)
+                    logger.error("Failed to send request to send message", e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
                     if (!response.isSuccessful) {
                         logger.error("Failed to send message: {}", response.body!!.string())
                     }
+
+                    response.closeQuietly()
                 }
             })
         }
@@ -353,10 +358,18 @@ class MainViewModel : ViewModel() {
 
             httpClient.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    e.printStackTrace()
+                    logger.error("Failed to send request to load messages", e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to load messages: {}", response.body!!.string())
+
+                        response.closeQuietly()
+
+                        return
+                    }
+
                     val messages: MutableList<PublicMessage> = gson.fromJson(
                         response.body!!.string(),
                         object : TypeToken<MutableList<PublicMessage>>() {}.type
@@ -390,6 +403,8 @@ class MainViewModel : ViewModel() {
                     if (!response.isSuccessful) {
                         logger.error("Failed to create channel: {}", response.body!!.string())
                     }
+
+                    response.closeQuietly()
                 }
             })
         }
@@ -415,6 +430,8 @@ class MainViewModel : ViewModel() {
                     if (!response.isSuccessful) {
                         logger.error("Failed to rename channel: {}", response.body!!.string())
                     }
+
+                    response.closeQuietly()
                 }
             })
         }
@@ -437,6 +454,8 @@ class MainViewModel : ViewModel() {
                     if (!response.isSuccessful) {
                         logger.error("Failed to delete guild: {}", response.body!!.string())
                     }
+
+                    response.closeQuietly()
                 }
             })
         }
@@ -459,6 +478,8 @@ class MainViewModel : ViewModel() {
                     if (!response.isSuccessful) {
                         logger.error("Failed to delete channel: {}", response.body!!.string())
                     }
+
+                    response.closeQuietly()
                 }
             })
         }
@@ -481,6 +502,8 @@ class MainViewModel : ViewModel() {
                     if (!response.isSuccessful) {
                         logger.error("Failed to delete message: {}", response.body!!.string())
                     }
+
+                    response.closeQuietly()
                 }
             })
         }
