@@ -113,6 +113,8 @@ class MainViewModel : ViewModel() {
                         for (guildElement in guilds) {
                             val guild = gson.fromJson(guildElement, PublicGuild::class)
 
+                            _guilds.update { guilds -> guilds + guild }
+
                             for (channel in (guildElement as JsonObject)["channels"].asJsonArray) {
                                 val parsedChannel = gson.fromJson(channel, PublicGuildTextChannel::class)
                                 parsedChannel.guildId = guild.completeId()
@@ -122,6 +124,8 @@ class MainViewModel : ViewModel() {
                         }
 
                         startHeartbeat()
+
+                        _isLoadingInitial.update { false }
                     }
 
                     "HEARTBEAT_ACK" -> {
@@ -259,43 +263,6 @@ class MainViewModel : ViewModel() {
                 "{ \"t\": \"members\", \"channel_id\": \"${_currentChannel.value?.completeId()}\", " +
                         "\"range\": [$min, $max] }"
             )
-        }
-    }
-
-    fun loadGuilds() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val request = Request.Builder()
-                .url("${instance}/users/@me/guild")
-                .header("Authorization", "Bearer $token")
-                .build()
-
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request for to load guilds", e)
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to load guilds: {}", response.body!!.string())
-
-                        response.closeQuietly()
-
-                        return
-                    }
-
-                    val type = object : TypeToken<List<PublicGuild>>() {}.type
-                    val guilds = gson.fromJson<List<PublicGuild>>(response.body!!.string(), type)
-
-                    _guilds.value = guilds
-
-                    if (guilds.isNotEmpty()) {
-                        _currentGuild.value = guilds[0]
-                        _currentChannel.value = _currentGuild.value!!.channels[0]
-                    }
-
-                    _isLoadingInitial.value = false
-                }
-            })
         }
     }
 

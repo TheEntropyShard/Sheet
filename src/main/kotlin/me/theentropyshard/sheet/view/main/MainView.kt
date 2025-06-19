@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
@@ -62,10 +63,6 @@ fun MainView(
     val scope = rememberCoroutineScope()
     val state = rememberLazyListState()
     val clipboard = LocalClipboard.current
-
-    LaunchedEffect(Unit) {
-        model.loadGuilds()
-    }
 
     var createChannelDialogVisible by remember { mutableStateOf(false) }
     var renameChannelDialogVisible by remember { mutableStateOf(false) }
@@ -147,7 +144,12 @@ fun MainView(
     }
 
     if (isLoadingInitial) {
-        CircularProgressIndicator()
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
     } else {
         Row(modifier = modifier) {
             Spacer(modifier = Modifier.width(16.dp))
