@@ -172,52 +172,37 @@ fun MainView(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            var menuVisible by remember { mutableStateOf(false) }
-
             key(channels) {
                 if (currentGuild != null) {
-                    Box(modifier = modifier, contentAlignment = Alignment.TopStart) {
-                        Column {
-                            GuildMenu(
-                                visible = menuVisible,
-                                onDismissRequest = { menuVisible = false }
-                            ) { action ->
-                                when (action) {
-                                    GuildMenuItemAction.CreateChannel -> createChannelDialogVisible = true
-                                    GuildMenuItemAction.CreateInvite -> createInviteDialogVisible = true
-                                    GuildMenuItemAction.DeleteGuild -> deleteGuildDialogVisible = true
+                    ChannelList(
+                        modifier = Modifier.fillMaxHeight().width(200.dp),
+                        channels = channels.filter { channel -> channel.guildId == currentGuild?.completeId() },
+                        isChannelSelected = { channel ->
+                            channel.id == currentChannel?.id
+                        },
+                        onGuildMenuAction = { action ->
+                            when (action) {
+                                GuildMenuItemAction.CreateChannel -> createChannelDialogVisible = true
+                                GuildMenuItemAction.CreateInvite -> createInviteDialogVisible = true
+                                GuildMenuItemAction.DeleteGuild -> deleteGuildDialogVisible = true
+                            }
+                        },
+                        guildName = currentGuild!!.name,
+                        onChannelMenuItemClick = { action, channel ->
+                            when (action) {
+                                ChannelMenuItemAction.Rename -> {
+                                    channelForRename = channel
+                                    renameChannelDialogVisible = true
+                                }
+
+                                ChannelMenuItemAction.Delete -> {
+                                    channelForDeletion = channel
+                                    deleteChannelDialogVisible = true
                                 }
                             }
-                        }
-                        ChannelList(
-                            modifier = Modifier.fillMaxHeight().width(200.dp),
-                            header = {
-                                GuildHeader(
-                                    guildName = currentGuild!!.name,
-                                    menuVisible = menuVisible,
-                                    onClick = { menuVisible = true }
-                                )
-                            },
-                            channels = channels.filter { channel -> channel.guildId == currentGuild?.completeId() },
-                            isChannelSelected = { channel ->
-                                channel.id == currentChannel?.id
-                            },
-                            onChannelMenuItemClick = { action, channel ->
-                                when (action) {
-                                    ChannelMenuItemAction.Rename -> {
-                                        channelForRename = channel
-                                        renameChannelDialogVisible = true
-                                    }
-
-                                    ChannelMenuItemAction.Delete -> {
-                                        channelForDeletion = channel
-                                        deleteChannelDialogVisible = true
-                                    }
-                                }
-                            },
-                        ) {
-                            model.selectChannel(it)
-                        }
+                        },
+                    ) {
+                        model.selectChannel(it)
                     }
                 }
             }
@@ -246,6 +231,7 @@ fun MainView(
                                     StringSelection(message.content), null
                                 )
                             }
+
                             MessageContextMenuAction.Delete -> {
                                 model.deleteMessage(currentChannel!!.completeId(), message.id)
                             }

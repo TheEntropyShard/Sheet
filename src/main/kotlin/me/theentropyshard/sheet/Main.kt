@@ -37,7 +37,9 @@ import androidx.navigation.compose.rememberNavController
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
+import me.theentropyshard.sheet.api.model.PrivateRelationship
 import me.theentropyshard.sheet.api.model.PublicUser
+import me.theentropyshard.sheet.api.model.RelationshipType
 import me.theentropyshard.sheet.view.login.LoginView
 import me.theentropyshard.sheet.view.login.LoginViewModel
 import me.theentropyshard.sheet.view.main.MainView
@@ -55,7 +57,10 @@ import kotlin.reflect.KClass
 
 object Sheet {
     val httpClient = OkHttpClient()
-    val gson: Gson = GsonBuilder().disableJdkUnsafe().create()
+    val gson: Gson = GsonBuilder()
+        .disableJdkUnsafe()
+        .registerTypeAdapter(RelationshipType::class.java, RelationshipType.Adapter())
+        .create()
 
     lateinit var instance: String
     lateinit var token: String

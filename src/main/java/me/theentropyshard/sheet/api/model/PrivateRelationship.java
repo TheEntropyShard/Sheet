@@ -21,5 +21,5 @@ package me.theentropyshard.sheet.api.model;
 public class PrivateRelationship {
     public String created;
     public PublicUser user;
-    public int type;
+    public RelationshipType type;
 }

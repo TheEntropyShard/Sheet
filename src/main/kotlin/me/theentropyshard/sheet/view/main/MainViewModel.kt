@@ -32,6 +32,7 @@ import me.theentropyshard.sheet.Sheet.httpClient
 import me.theentropyshard.sheet.Sheet.instance
 import me.theentropyshard.sheet.Sheet.token
 import me.theentropyshard.sheet.Sheet.webSocket
+import me.theentropyshard.sheet.api.model.PrivateRelationship
 import me.theentropyshard.sheet.api.model.PublicGuild
 import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 import me.theentropyshard.sheet.api.model.PublicMessage
@@ -66,6 +67,9 @@ class MainViewModel : ViewModel() {
 
     private val _members: MutableStateFlow<List<JsonObject>> = MutableStateFlow(listOf())
     val members = _members.asStateFlow()
+
+    private val _relationships: MutableStateFlow<List<PrivateRelationship>> = MutableStateFlow(listOf())
+    val relationships = _relationships.asStateFlow()
 
     private var sequence: Int = 0
 
@@ -121,6 +125,14 @@ class MainViewModel : ViewModel() {
 
                                 _channels.update { channels -> channels + parsedChannel }
                             }
+                        }
+
+                        val relationships = message["d"].asJsonObject["relationships"].asJsonArray
+
+                        for (relationshipElement in relationships) {
+                            val relationship = gson.fromJson(relationshipElement, PrivateRelationship::class)
+
+                            _relationships.update { relationships -> relationships +  relationship}
                         }
 
                         startHeartbeat()

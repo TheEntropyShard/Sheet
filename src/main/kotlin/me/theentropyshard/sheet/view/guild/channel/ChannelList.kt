@@ -31,34 +31,52 @@ import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 @Composable
 fun ChannelList(
     modifier: Modifier = Modifier,
-    header: @Composable () -> Unit,
     channels: List<PublicGuildTextChannel>,
+    guildName: String,
     isChannelSelected: (PublicGuildTextChannel) -> Boolean,
+    onGuildMenuAction: (GuildMenuItemAction) -> Unit,
     onChannelMenuItemClick: (ChannelMenuItemAction, PublicGuildTextChannel) -> Unit,
     onClick: (String) -> Unit
 ) {
-    Column(modifier = modifier) {
-        header()
+    var menuVisible by remember { mutableStateOf(false) }
 
-        Spacer(modifier = Modifier.height(8.dp))
+    Box(modifier = modifier, contentAlignment = Alignment.TopStart) {
+        Column {
+            GuildMenu(
+                visible = menuVisible,
+                onDismissRequest = { menuVisible = false }
+            ) { action ->
+                onGuildMenuAction(action)
+            }
+        }
 
-        HorizontalDivider(
-            modifier = Modifier.fillMaxWidth(),
-            thickness = 2.dp,
-            color = MaterialTheme.colorScheme.surfaceContainer
-        )
+        Column(modifier = modifier) {
+            GuildHeader(
+                guildName = guildName,
+                menuVisible = menuVisible,
+                onClick = { menuVisible = true }
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(channels) {
-                ChannelItem(
-                    name = it.name,
-                    onMenuItemClick = { action -> onChannelMenuItemClick(action, it) },
-                    selected = isChannelSelected(it)
-                ) { onClick(it.id) }
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 2.dp,
+                color = MaterialTheme.colorScheme.surfaceContainer
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(channels) {
+                    ChannelItem(
+                        name = it.name,
+                        onMenuItemClick = { action -> onChannelMenuItemClick(action, it) },
+                        selected = isChannelSelected(it)
+                    ) { onClick(it.id) }
+                }
             }
         }
     }
