@@ -27,6 +27,17 @@ public class PublicGuildTextChannel {
     @SerializedName("guild_id")
     public String guildId;
 
+    public PublicGuildTextChannel() {
+
+    }
+
+    public PublicGuildTextChannel(PublicGuildTextChannel channel) {
+        this.id = channel.id;
+        this.name = channel.name;
+        this.domain = channel.domain;
+        this.guildId = channel.guildId;
+    }
+
     public String completeId() {
         return this.id + "@" + this.domain;
     }

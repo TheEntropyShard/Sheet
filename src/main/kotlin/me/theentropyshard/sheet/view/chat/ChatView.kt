@@ -58,7 +58,7 @@ fun ChatView(
                 state = state,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(messages) {
+                items(items = messages, key = { it.id }) {
                     ChatMessage(
                         modifier = Modifier.fillMaxWidth(),
                         message = it,

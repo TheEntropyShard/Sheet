@@ -20,7 +20,8 @@ package me.theentropyshard.sheet.view.main
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -38,8 +39,6 @@ import me.theentropyshard.sheet.view.dialog.ConfirmDialog
 import me.theentropyshard.sheet.view.dialog.InputDialog
 import me.theentropyshard.sheet.view.guild.channel.ChannelList
 import me.theentropyshard.sheet.view.guild.channel.ChannelMenuItemAction
-import me.theentropyshard.sheet.view.guild.channel.GuildHeader
-import me.theentropyshard.sheet.view.guild.channel.GuildMenu
 import me.theentropyshard.sheet.view.guild.channel.GuildMenuItemAction
 import me.theentropyshard.sheet.view.guild.dialog.JoinOrCreateGuildDialog
 import me.theentropyshard.sheet.view.guild.invite.CreateInviteDialog
@@ -55,12 +54,12 @@ fun MainView(
     model: MainViewModel
 ) {
     val isLoadingInitial by model.isLoadingInitial.collectAsState()
-    val guilds by model.guilds.collectAsState()
     val currentGuild by model.currentGuild.collectAsState()
     val currentChannel by model.currentChannel.collectAsState()
-    val channels by model.channels.collectAsState()
-    val messages by model.messages.collectAsState()
-    val members by model.members.collectAsState()
+    val guilds = model.guilds
+    val channels = model.channels
+    val messages = model.messages
+    val members = model.members
 
     val scope = rememberCoroutineScope()
     val state = rememberLazyListState()
@@ -76,10 +75,13 @@ fun MainView(
     var channelForRename by remember { mutableStateOf<PublicGuildTextChannel?>(null) }
     var channelForDeletion by remember { mutableStateOf<PublicGuildTextChannel?>(null) }
 
-    LaunchedEffect(messages) {
+    LaunchedEffect(messages.size) {
         scope.launch {
             if (messages.isNotEmpty()) {
                 state.animateScrollToItem(messages.size - 1)
+                println("waaa?")
+            } else {
+                println("ehhh?")
             }
         }
     }
@@ -172,38 +174,36 @@ fun MainView(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            key(channels) {
-                if (currentGuild != null) {
-                    ChannelList(
-                        modifier = Modifier.fillMaxHeight().width(200.dp),
-                        channels = channels.filter { channel -> channel.guildId == currentGuild?.completeId() },
-                        isChannelSelected = { channel ->
-                            channel.id == currentChannel?.id
-                        },
-                        onGuildMenuAction = { action ->
-                            when (action) {
-                                GuildMenuItemAction.CreateChannel -> createChannelDialogVisible = true
-                                GuildMenuItemAction.CreateInvite -> createInviteDialogVisible = true
-                                GuildMenuItemAction.DeleteGuild -> deleteGuildDialogVisible = true
+            if (currentGuild != null) {
+                ChannelList(
+                    modifier = Modifier.fillMaxHeight().width(200.dp),
+                    channels = channels.filter { channel -> channel.guildId == currentGuild?.completeId() },
+                    isChannelSelected = { channel ->
+                        channel.id == currentChannel?.id
+                    },
+                    onGuildMenuAction = { action ->
+                        when (action) {
+                            GuildMenuItemAction.CreateChannel -> createChannelDialogVisible = true
+                            GuildMenuItemAction.CreateInvite -> createInviteDialogVisible = true
+                            GuildMenuItemAction.DeleteGuild -> deleteGuildDialogVisible = true
+                        }
+                    },
+                    guildName = currentGuild!!.name,
+                    onChannelMenuItemClick = { action, channel ->
+                        when (action) {
+                            ChannelMenuItemAction.Rename -> {
+                                channelForRename = channel
+                                renameChannelDialogVisible = true
                             }
-                        },
-                        guildName = currentGuild!!.name,
-                        onChannelMenuItemClick = { action, channel ->
-                            when (action) {
-                                ChannelMenuItemAction.Rename -> {
-                                    channelForRename = channel
-                                    renameChannelDialogVisible = true
-                                }
 
-                                ChannelMenuItemAction.Delete -> {
-                                    channelForDeletion = channel
-                                    deleteChannelDialogVisible = true
-                                }
+                            ChannelMenuItemAction.Delete -> {
+                                channelForDeletion = channel
+                                deleteChannelDialogVisible = true
                             }
-                        },
-                    ) {
-                        model.selectChannel(it)
-                    }
+                        }
+                    },
+                ) {
+                    model.selectChannel(it)
                 }
             }
 

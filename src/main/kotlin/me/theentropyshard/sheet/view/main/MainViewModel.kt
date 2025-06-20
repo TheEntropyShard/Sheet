@@ -18,6 +18,7 @@
 
 package me.theentropyshard.sheet.view.main
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.JsonObject
@@ -50,26 +51,17 @@ class MainViewModel : ViewModel() {
     private val _isLoadingInitial = MutableStateFlow(true)
     val isLoadingInitial = _isLoadingInitial.asStateFlow()
 
-    private val _guilds: MutableStateFlow<List<PublicGuild>> = MutableStateFlow(listOf())
-    val guilds = _guilds.asStateFlow()
-
     private val _currentGuild: MutableStateFlow<PublicGuild?> = MutableStateFlow(null)
     val currentGuild = _currentGuild.asStateFlow()
 
     private val _currentChannel: MutableStateFlow<PublicGuildTextChannel?> = MutableStateFlow(null)
     val currentChannel = _currentChannel.asStateFlow()
 
-    private val _channels: MutableStateFlow<List<PublicGuildTextChannel>> = MutableStateFlow(listOf())
-    val channels = _channels.asStateFlow()
-
-    private val _messages: MutableStateFlow<List<PublicMessage>> = MutableStateFlow(listOf())
-    val messages = _messages.asStateFlow()
-
-    private val _members: MutableStateFlow<List<JsonObject>> = MutableStateFlow(listOf())
-    val members = _members.asStateFlow()
-
-    private val _relationships: MutableStateFlow<List<PrivateRelationship>> = MutableStateFlow(listOf())
-    val relationships = _relationships.asStateFlow()
+    val guilds = mutableStateListOf<PublicGuild>()
+    val channels = mutableStateListOf<PublicGuildTextChannel>()
+    val messages = mutableStateListOf<PublicMessage>()
+    val members = mutableStateListOf<JsonObject>()
+    val relationships = mutableStateListOf<PrivateRelationship>()
 
     private var sequence: Int = 0
 
@@ -112,27 +104,25 @@ class MainViewModel : ViewModel() {
 
                 when (message["t"].asString) {
                     "READY" -> {
-                        val guilds = message["d"].asJsonObject["guilds"].asJsonArray
+                        val guildsArray = message["d"].asJsonObject["guilds"].asJsonArray
 
-                        for (guildElement in guilds) {
+                        for (guildElement in guildsArray) {
                             val guild = gson.fromJson(guildElement, PublicGuild::class)
 
-                            _guilds.update { guilds -> guilds + guild }
+                            guilds += guild
 
                             for (channel in (guildElement as JsonObject)["channels"].asJsonArray) {
                                 val parsedChannel = gson.fromJson(channel, PublicGuildTextChannel::class)
                                 parsedChannel.guildId = guild.completeId()
 
-                                _channels.update { channels -> channels + parsedChannel }
+                                channels += parsedChannel
                             }
                         }
 
-                        val relationships = message["d"].asJsonObject["relationships"].asJsonArray
+                        val relationshipsArray = message["d"].asJsonObject["relationships"].asJsonArray
 
-                        for (relationshipElement in relationships) {
-                            val relationship = gson.fromJson(relationshipElement, PrivateRelationship::class)
-
-                            _relationships.update { relationships -> relationships +  relationship}
+                        for (relationshipElement in relationshipsArray) {
+                            relationships += gson.fromJson(relationshipElement, PrivateRelationship::class)
                         }
 
                         startHeartbeat()
@@ -156,20 +146,21 @@ class MainViewModel : ViewModel() {
                         val shootMessage =
                             gson.fromJson(message["d"].asJsonObject["message"], PublicMessage::class.java)
 
-                        _messages.update { list -> listOf(shootMessage) + list }
+                        messages.add(0, shootMessage)
                     }
 
                     "MESSAGE_DELETE" -> {
                         val channelId = message["d"].asJsonObject["channel_id"].asString
                         val messageId = message["d"].asJsonObject["message_id"].asString
 
-                        val shootMessage = _messages.value.find { message ->
-                            message.channelId == _channels.value.find { channel ->
-                                channel.id == channelId }?.completeId() && message.id == messageId
+                        val shootMessage = messages.find { message ->
+                            message.channelId == channels.find { channel ->
+                                channel.id == channelId
+                            }?.completeId() && message.id == messageId
                         }
 
                         if (shootMessage != null) {
-                            _messages.update { list -> list - shootMessage }
+                            messages -= shootMessage
                         }
                     }
 
@@ -185,17 +176,17 @@ class MainViewModel : ViewModel() {
                         val guild =
                             gson.fromJson(message["d"].asJsonObject["guild"], PublicGuild::class.java)
 
-                        _guilds.update { list -> list + guild }
+                        guilds += guild
                         _currentGuild.update { guild }
                     }
 
                     "GUILD_DELETE" -> {
                         val guildId = message["d"].asJsonObject["guild_id"].asString
 
-                        val guild = _guilds.value.find { guild -> guild.id == guildId }
+                        val guild = guilds.find { guild -> guild.id == guildId }
 
                         if (guild != null) {
-                            _guilds.update { list -> list - guild }
+                            guilds -= guild
                         }
                     }
 
@@ -203,33 +194,42 @@ class MainViewModel : ViewModel() {
                         val channel = gson.fromJson(message["d"].asJsonObject["channel"], PublicGuildTextChannel::class)
                         channel.guildId += "@${channel.domain}"
 
-                        val guild = _guilds.value.find { guild -> guild.completeId() == channel.guildId }!!
+                        val guild = guilds.find { guild -> guild.completeId() == channel.guildId }!!
                         guild.channels.add(channel)
 
-                        _channels.update { channels -> channels + channel }
+                        channels += channel
                         _currentChannel.update { channel }
                     }
 
                     "CHANNEL_DELETE" -> {
                         val channelId = message["d"].asJsonObject["channel_id"].asString
                         val guildId = message["d"].asJsonObject["guild_id"].asString
-                        _channels.update { channels ->
-                            val list = channels.toMutableList()
-                            list.removeIf { channel ->
-                                channel.completeId() == channelId && channel.guildId == guildId
-                            }
-                            list
+
+                        channels.removeIf { channel ->
+                            channel.completeId() == channelId && channel.guildId == guildId
                         }
                     }
 
                     "CHANNEL_UPDATE" -> {
+                        val updatedChannel =
+                            gson.fromJson(message["d"].asJsonObject["channel"], PublicGuildTextChannel::class)
 
+                        val foundChannel =
+                            channels.find { channel -> channel.completeId() == updatedChannel.completeId() }
+
+                        if (foundChannel != null) {
+                            channels[channels.indexOf(foundChannel)] = PublicGuildTextChannel(updatedChannel)
+                        }
                     }
 
                     "MEMBERS_CHUNK" -> {
                         val array = message["d"].asJsonObject["items"].asJsonArray
 
-                        _members.update { array.filter { it.isJsonObject }.map { it.asJsonObject } }
+                        members.apply {
+                            clear()
+
+                            addAll(array.filter { it.isJsonObject }.map { it.asJsonObject })
+                        }
                     }
 
                     "MEMBER_JOIN" -> {
@@ -306,7 +306,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun selectGuild(id: String) {
-        for (guild in _guilds.value) {
+        for (guild in guilds) {
             if (guild.id == id) {
                 _currentGuild.value = guild
                 selectChannel(guild.channels[0].id)
@@ -349,13 +349,23 @@ class MainViewModel : ViewModel() {
                         return
                     }
 
-                    val messages: MutableList<PublicMessage> = gson.fromJson(
+                    val receivedMessages: MutableList<PublicMessage> = gson.fromJson(
                         response.body!!.string(),
                         object : TypeToken<MutableList<PublicMessage>>() {}.type
                     )
 
                     viewModelScope.launch {
-                        _messages.update { list -> if (add) messages + list else messages }
+                        //_messages.update { list -> if (add) messages + list else messages }
+
+                        if (add) {
+                            messages += receivedMessages
+                        } else {
+                            messages.apply {
+                                clear()
+
+                                addAll(receivedMessages)
+                            }
+                        }
                     }
                 }
             })
