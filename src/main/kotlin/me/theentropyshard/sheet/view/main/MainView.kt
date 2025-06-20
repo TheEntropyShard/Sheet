@@ -79,9 +79,6 @@ fun MainView(
         scope.launch {
             if (messages.isNotEmpty()) {
                 state.animateScrollToItem(messages.size - 1)
-                println("waaa?")
-            } else {
-                println("ehhh?")
             }
         }
     }
