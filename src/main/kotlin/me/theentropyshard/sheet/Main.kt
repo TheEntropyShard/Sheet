@@ -18,8 +18,11 @@
 
 package me.theentropyshard.sheet
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -103,28 +106,33 @@ private fun Sheet() {
         }
     }
 
-    SheetTheme {
-        NavHost(
-            navController = navController,
-            startDestination = "login"
+    SheetTheme { darkTheme ->
+        Surface(
+            color = if (darkTheme) Color.Black else Color.White,
+            contentColor = MaterialTheme.colorScheme.onSurface
         ) {
-            composable("login") {
-                LoginView(
-                    model = loginViewModel,
-                    instanceTextFieldValue = instance,
-                    onInstanceTextFieldValue = { instance = it },
-                    usernameTextFieldValue = username,
-                    onUsernameTextFieldValue = { username = it },
-                    passwordTextFieldValue = password,
-                    onPasswordTextFieldValue = { password = it },
-                ) {
-                    Sheet.instance = instance.text
-                    loginViewModel.login(instance.text, username.text, password.text)
+            NavHost(
+                navController = navController,
+                startDestination = "login"
+            ) {
+                composable("login") {
+                    LoginView(
+                        model = loginViewModel,
+                        instanceTextFieldValue = instance,
+                        onInstanceTextFieldValue = { instance = it },
+                        usernameTextFieldValue = username,
+                        onUsernameTextFieldValue = { username = it },
+                        passwordTextFieldValue = password,
+                        onPasswordTextFieldValue = { password = it },
+                    ) {
+                        Sheet.instance = instance.text
+                        loginViewModel.login(instance.text, username.text, password.text)
+                    }
                 }
-            }
 
-            composable("main") {
-                MainView(model = mainViewModel)
+                composable("main") {
+                    MainView(model = mainViewModel)
+                }
             }
         }
     }
