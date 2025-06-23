@@ -125,6 +125,10 @@ class MainViewModel : ViewModel() {
                             relationships += gson.fromJson(relationshipElement, PrivateRelationship::class)
                         }
 
+                        viewModelScope.launch {
+                            selectGuild(guilds[0].id)
+                        }
+
                         startHeartbeat()
 
                         _isLoadingInitial.update { false }
