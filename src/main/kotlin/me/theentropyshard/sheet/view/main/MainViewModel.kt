@@ -38,6 +38,8 @@ import me.theentropyshard.sheet.api.model.PublicGuild
 import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 import me.theentropyshard.sheet.api.model.PublicMessage
 import me.theentropyshard.sheet.fromJson
+import me.theentropyshard.sheet.model.Message
+import me.theentropyshard.sheet.model.toMessage
 import me.theentropyshard.sheet.toRequestBody
 import okhttp3.*
 import okhttp3.internal.closeQuietly
@@ -59,7 +61,7 @@ class MainViewModel : ViewModel() {
 
     val guilds = mutableStateListOf<PublicGuild>()
     val channels = mutableStateListOf<PublicGuildTextChannel>()
-    val messages = mutableStateListOf<PublicMessage>()
+    val messages = mutableStateListOf<Message>()
     val members = mutableStateListOf<JsonObject>()
     val relationships = mutableStateListOf<PrivateRelationship>()
 
@@ -150,7 +152,7 @@ class MainViewModel : ViewModel() {
                         val shootMessage =
                             gson.fromJson(message["d"].asJsonObject["message"], PublicMessage::class.java)
 
-                        messages.add(0, shootMessage)
+                        messages.add(0, shootMessage.toMessage())
                     }
 
                     "MESSAGE_DELETE" -> {
@@ -324,7 +326,7 @@ class MainViewModel : ViewModel() {
         for (channel in _currentGuild.value!!.channels) {
             if (channel.id == id) {
                 _currentChannel.value = channel
-                loadMessages("$id@${channel.domain}", false)
+                loadMessages(channelId = channel.completeId(), replace = true)
                 subscribeForChannelMembersRange()
 
                 break
@@ -332,7 +334,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun loadMessages(channelId: String, add: Boolean = true) {
+    fun loadMessages(channelId: String, replace: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             val request = Request.Builder()
                 .url("${instance}/channel/$channelId/messages")
@@ -353,22 +355,18 @@ class MainViewModel : ViewModel() {
                         return
                     }
 
-                    val receivedMessages: MutableList<PublicMessage> = gson.fromJson(
+                    val shootMessages: MutableList<PublicMessage> = gson.fromJson(
                         response.body!!.string(),
                         object : TypeToken<MutableList<PublicMessage>>() {}.type
                     )
 
                     viewModelScope.launch {
-                        //_messages.update { list -> if (add) messages + list else messages }
-
-                        if (add) {
-                            messages += receivedMessages
-                        } else {
-                            messages.apply {
+                        messages.apply {
+                            if (replace) {
                                 clear()
-
-                                addAll(receivedMessages)
                             }
+
+                            shootMessages.forEach { this += it.toMessage() }
                         }
                     }
                 }
@@ -382,7 +380,7 @@ class MainViewModel : ViewModel() {
             data.addProperty("name", name)
 
             val request = Request.Builder()
-                .url("${instance}/guild/${_currentGuild.value?.id}@${_currentGuild.value?.domain}/channel")
+                .url("${instance}/guild/${_currentGuild.value?.completeId()}/channel")
                 .header("Authorization", "Bearer $token")
                 .post(data.toRequestBody())
                 .build()

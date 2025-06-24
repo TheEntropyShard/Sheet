@@ -225,7 +225,7 @@ fun MainView(
                             MessageContextMenuAction.Forward -> {}
                             MessageContextMenuAction.CopyText -> {
                                 clipboard.awtClipboard!!.setContents(
-                                    StringSelection(message.content), null
+                                    StringSelection(message.text), null
                                 )
                             }
 

@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.kamel.image.asyncPainterResource
 import me.theentropyshard.sheet.Sheet
-import me.theentropyshard.sheet.api.model.PublicMessage
+import me.theentropyshard.sheet.model.Message
 import me.theentropyshard.sheet.utils.painterResource
 import me.theentropyshard.sheet.view.components.NoMaxSizeImage
 import java.time.ZoneOffset
@@ -52,22 +52,17 @@ private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yy
 private val pingColor = Color(0xFFFAD6A5)
 private val pingColorHover = Color(0xFFD1A364)
 
-private fun PublicMessage.isPing(user: String): Boolean {
-    return this.content != null && this.content.startsWith("$user: ")
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatMessage(
     modifier: Modifier = Modifier,
-    message: PublicMessage,
-    onContextMenuAction: (MessageContextMenuAction, PublicMessage) -> Unit
+    message: Message,
+    onContextMenuAction: (MessageContextMenuAction, Message) -> Unit
 ) {
     val source = remember { MutableInteractionSource() }
     val isHovered by source.collectIsHoveredAsState()
 
     var menuVisible by remember { mutableStateOf(false) }
-
     var offset by remember { mutableStateOf(Offset.Zero) }
 
     Row(
@@ -99,7 +94,14 @@ fun ChatMessage(
         Spacer(modifier = Modifier.width(6.dp))
 
         Column {
-            MessageHeader(authorId = message.authorId, date = message.published)
+            MessageHeader(
+                authorName = message.authorId.substringBefore('@'),
+                date = formatter.format(
+                    ZonedDateTime
+                        .parse(message.published)
+                        .withZoneSameInstant(ZoneOffset.systemDefault())
+                )
+            )
 
             MessageBody(message = message)
         }
@@ -143,7 +145,7 @@ private fun Avatar(
 @Composable
 fun MessageHeader(
     modifier: Modifier = Modifier,
-    authorId: String,
+    authorName: String,
     date: String
 ) {
     Row(
@@ -152,14 +154,14 @@ fun MessageHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = authorId.split("@")[0],
+            text = authorName,
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.0.sp,
             style = MaterialTheme.typography.bodySmall
         )
 
         Text(
-            text = formatter.format(ZonedDateTime.parse(date).withZoneSameInstant(ZoneOffset.systemDefault())),
+            text = date,
             style = MaterialTheme.typography.bodySmall
         )
     }
@@ -168,18 +170,16 @@ fun MessageHeader(
 @Composable
 private fun MessageBody(
     modifier: Modifier = Modifier,
-    message: PublicMessage
+    message: Message
 ) {
     if (!message.hasText() && !message.hasAttachments()) {
         return
     }
 
-    Column(
-        modifier = modifier
-    ) {
+    Column(modifier = modifier) {
         if (message.hasText()) {
             Text(
-                text = message.content,
+                text = message.text!!,
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -188,15 +188,14 @@ private fun MessageBody(
             Spacer(modifier = Modifier.height(6.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                for (attachment in message.files) {
+                for (attachment in message.attachments!!) {
                     if (attachment.type.startsWith("image/")) {
                         ImageAttachment(
                             name = attachment.name,
-                            hash = attachment.hash,
-                            channelId = message.channelId
-                        )
-
-                        // TODO: download image
+                            url = "${Sheet.instance}/channel/${message.channelId}/attachments/${attachment.hash}"
+                        ) {
+                            // TODO: download image
+                        }
                     } else {
                         FileAttachment(
                             name = attachment.name,
@@ -215,11 +214,11 @@ private fun MessageBody(
 private fun ImageAttachment(
     modifier: Modifier = Modifier,
     name: String,
-    hash: String,
-    channelId: String,
+    url: String,
+    onClick: () -> Unit
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
@@ -233,7 +232,7 @@ private fun ImageAttachment(
                 modifier = Modifier.clip(RoundedCornerShape(6.dp)),
                 contentDescription = name,
                 resource = {
-                    asyncPainterResource(data = "${Sheet.instance}/channel/$channelId/attachments/$hash")
+                    asyncPainterResource(data = url)
                 },
                 onLoading = {
                     CircularProgressIndicator(
