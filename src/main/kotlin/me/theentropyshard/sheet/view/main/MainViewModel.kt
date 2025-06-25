@@ -82,8 +82,16 @@ class MainViewModel : ViewModel() {
     }
 
     fun createWebSocket() {
+        val url = if (instance.startsWith("http://")) {
+            instance.replace("http", "ws")
+        } else if (instance.startsWith("https://")) {
+            instance.replace("https", "wss")
+        } else {
+            throw RuntimeException("Wrong instance url: $instance")
+        }
+
         val request = Request.Builder()
-            .url(instance.replace("https", "wss"))
+            .url(url)
             .build()
 
         val listener = object : WebSocketListener() {
