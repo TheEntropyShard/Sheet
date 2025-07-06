@@ -25,9 +25,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -35,6 +37,7 @@ import androidx.compose.ui.unit.sp
 fun LoginView(
     modifier: Modifier = Modifier,
     model: LoginViewModel,
+    navigateToRegister: () -> Unit,
     onLogin: (String, String, String) -> Unit
 ) {
     val isLoading by model.isLoading.collectAsState()
@@ -58,13 +61,37 @@ fun LoginView(
             color = MaterialTheme.colorScheme.surface
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
+                modifier = Modifier.padding(24.dp).width(280.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = "Login",
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp
+                )
+
+                Text(
+                    text = buildAnnotatedString {
+                        append("New here?")
+
+                        append(" ")
+
+                        withLink(
+                            link = LinkAnnotation.Clickable(
+                                tag = "register",
+                                styles = TextLinkStyles(
+                                    style = SpanStyle(
+                                        color = MaterialTheme.colorScheme.primary,
+                                        textDecoration = TextDecoration.Underline
+                                    )
+                                ),
+                                linkInteractionListener = {
+                                    navigateToRegister()
+                                }
+                            )) {
+                            append("Register")
+                        }
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

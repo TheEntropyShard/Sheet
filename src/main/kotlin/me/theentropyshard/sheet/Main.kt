@@ -43,6 +43,8 @@ import me.theentropyshard.sheet.view.login.LoginView
 import me.theentropyshard.sheet.view.login.LoginViewModel
 import me.theentropyshard.sheet.view.main.MainView
 import me.theentropyshard.sheet.view.main.MainViewModel
+import me.theentropyshard.sheet.view.register.RegisterView
+import me.theentropyshard.sheet.view.register.RegisterViewModel
 import me.theentropyshard.sheet.view.theme.SheetTheme
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -93,10 +95,13 @@ private fun Sheet() {
     val loginViewModel: LoginViewModel = viewModel()
     val isLoggedIn by loginViewModel.isLoggedIn.collectAsState()
 
+    val registerViewModel: RegisterViewModel = viewModel()
+    val isRegistered by registerViewModel.isRegistered.collectAsState()
+
     val mainViewModel: MainViewModel = viewModel()
 
-    LaunchedEffect(isLoggedIn) {
-        if (isLoggedIn) {
+    LaunchedEffect(isLoggedIn, isRegistered) {
+        if (isLoggedIn || isRegistered) {
             mainViewModel.loggedIn()
             navController.navigate("main")
         }
@@ -114,9 +119,24 @@ private fun Sheet() {
                 composable("login") {
                     LoginView(
                         model = loginViewModel,
+                        navigateToRegister = {
+                            navController.navigate("register")
+                        }
                     ) { instance, username, password ->
                         Sheet.instance = instance
                         loginViewModel.login(instance, username, password)
+                    }
+                }
+
+                composable("register") {
+                    RegisterView(
+                        model = registerViewModel,
+                        navigateToLogin = {
+                            navController.navigate("login")
+                        }
+                    ) { instance, username, password ->
+                        Sheet.instance = instance
+                        registerViewModel.register(username, password)
                     }
                 }
 

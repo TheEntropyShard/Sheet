@@ -116,16 +116,22 @@ class MainViewModel : ViewModel() {
                     "READY" -> {
                         val guildsArray = message["d"].asJsonObject["guilds"].asJsonArray
 
-                        for (guildElement in guildsArray) {
-                            val guild = gson.fromJson(guildElement, PublicGuild::class)
+                        if (guildsArray.size() > 0) {
+                            for (guildElement in guildsArray) {
+                                val guild = gson.fromJson(guildElement, PublicGuild::class)
 
-                            guilds += guild
+                                guilds += guild
 
-                            for (channel in (guildElement as JsonObject)["channels"].asJsonArray) {
-                                val parsedChannel = gson.fromJson(channel, PublicGuildTextChannel::class)
-                                parsedChannel.guildId = guild.completeId()
+                                for (channel in (guildElement as JsonObject)["channels"].asJsonArray) {
+                                    val parsedChannel = gson.fromJson(channel, PublicGuildTextChannel::class)
+                                    parsedChannel.guildId = guild.completeId()
 
-                                channels += parsedChannel
+                                    channels += parsedChannel
+                                }
+                            }
+
+                            viewModelScope.launch {
+                                selectGuild(guilds[0].id)
                             }
                         }
 
@@ -133,10 +139,6 @@ class MainViewModel : ViewModel() {
 
                         for (relationshipElement in relationshipsArray) {
                             relationships += gson.fromJson(relationshipElement, PrivateRelationship::class)
-                        }
-
-                        viewModelScope.launch {
-                            selectGuild(guilds[0].id)
                         }
 
                         startHeartbeat()
