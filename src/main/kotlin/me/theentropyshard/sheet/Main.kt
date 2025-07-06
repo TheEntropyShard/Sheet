@@ -18,12 +18,12 @@
 
 package me.theentropyshard.sheet
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.AwtWindow
@@ -37,7 +37,6 @@ import androidx.navigation.compose.rememberNavController
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
-import me.theentropyshard.sheet.api.model.PrivateRelationship
 import me.theentropyshard.sheet.api.model.PublicUser
 import me.theentropyshard.sheet.api.model.RelationshipType
 import me.theentropyshard.sheet.view.login.LoginView
@@ -91,14 +90,6 @@ fun Any.toRequestBody(): RequestBody {
 private fun Sheet() {
     val navController = rememberNavController()
 
-    val envInstance = System.getenv("SHOOT_INSTANCE") ?: ""
-    val envUsername = System.getenv("SHOOT_USERNAME") ?: ""
-    val envPassword = System.getenv("SHOOT_PASSWORD") ?: ""
-
-    var instance by rememberSaveable(TextFieldValue.Saver) { mutableStateOf(TextFieldValue(envInstance)) }
-    var username by rememberSaveable(TextFieldValue.Saver) { mutableStateOf(TextFieldValue(envUsername)) }
-    var password by rememberSaveable(TextFieldValue.Saver) { mutableStateOf(TextFieldValue(envPassword)) }
-
     val loginViewModel: LoginViewModel = viewModel()
     val isLoggedIn by loginViewModel.isLoggedIn.collectAsState()
 
@@ -123,15 +114,9 @@ private fun Sheet() {
                 composable("login") {
                     LoginView(
                         model = loginViewModel,
-                        instanceTextFieldValue = instance,
-                        onInstanceTextFieldValue = { instance = it },
-                        usernameTextFieldValue = username,
-                        onUsernameTextFieldValue = { username = it },
-                        passwordTextFieldValue = password,
-                        onPasswordTextFieldValue = { password = it },
-                    ) {
-                        Sheet.instance = instance.text
-                        loginViewModel.login(instance.text, username.text, password.text)
+                    ) { instance, username, password ->
+                        Sheet.instance = instance
+                        loginViewModel.login(instance, username, password)
                     }
                 }
 

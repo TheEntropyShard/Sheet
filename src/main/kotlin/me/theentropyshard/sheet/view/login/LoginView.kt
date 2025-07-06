@@ -18,18 +18,11 @@
 
 package me.theentropyshard.sheet.view.login
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -37,22 +30,23 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun LoginView(
     modifier: Modifier = Modifier,
     model: LoginViewModel,
-    instanceTextFieldValue: TextFieldValue,
-    onInstanceTextFieldValue: (TextFieldValue) -> Unit,
-    usernameTextFieldValue: TextFieldValue,
-    onUsernameTextFieldValue: (TextFieldValue) -> Unit,
-    passwordTextFieldValue: TextFieldValue,
-    onPasswordTextFieldValue: (TextFieldValue) -> Unit,
-    onLogin: () -> Unit
+    onLogin: (String, String, String) -> Unit
 ) {
     val isLoading by model.isLoading.collectAsState()
     val isError by model.isError.collectAsState()
+
+    val envInstance = System.getenv("SHOOT_INSTANCE") ?: ""
+    val envUsername = System.getenv("SHOOT_USERNAME") ?: ""
+    val envPassword = System.getenv("SHOOT_PASSWORD") ?: ""
+
+    var instance by rememberSaveable(TextFieldValue.Saver) { mutableStateOf(TextFieldValue(envInstance)) }
+    var username by rememberSaveable(TextFieldValue.Saver) { mutableStateOf(TextFieldValue(envUsername)) }
+    var password by rememberSaveable(TextFieldValue.Saver) { mutableStateOf(TextFieldValue(envPassword)) }
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -76,8 +70,8 @@ fun LoginView(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
-                    value = instanceTextFieldValue,
-                    onValueChange = onInstanceTextFieldValue,
+                    value = instance,
+                    onValueChange = { instance = it },
                     singleLine = true,
                     isError = isError,
                     label = {
@@ -86,8 +80,8 @@ fun LoginView(
                 )
 
                 OutlinedTextField(
-                    value = usernameTextFieldValue,
-                    onValueChange = onUsernameTextFieldValue,
+                    value = username,
+                    onValueChange = { username = it },
                     singleLine = true,
                     isError = isError,
                     label = {
@@ -96,8 +90,8 @@ fun LoginView(
                 )
 
                 OutlinedTextField(
-                    value = passwordTextFieldValue,
-                    onValueChange = onPasswordTextFieldValue,
+                    value = password,
+                    onValueChange = { password = it },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     isError = isError,
@@ -112,7 +106,7 @@ fun LoginView(
                     modifier = Modifier.align(Alignment.End),
                     onClick = {
                         if (!isLoading) {
-                            onLogin()
+                            onLogin(instance.text, username.text, password.text)
                         }
                     }
                 ) {
