@@ -57,6 +57,8 @@ private val pingColorHover = Color(0xFFD1A364)
 fun ChatMessage(
     modifier: Modifier = Modifier,
     message: Message,
+    sameAuthorPrev: Boolean,
+    sameAuthorNext: Boolean,
     onContextMenuAction: (MessageContextMenuAction, Message) -> Unit
 ) {
     val source = remember { MutableInteractionSource() }
@@ -64,6 +66,16 @@ fun ChatMessage(
 
     var menuVisible by remember { mutableStateOf(false) }
     var offset by remember { mutableStateOf(Offset.Zero) }
+
+    val padding = if (sameAuthorPrev) {
+        PaddingValues(2.dp)
+    } else {
+        if (sameAuthorNext) {
+            PaddingValues(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 2.dp)
+        } else {
+            PaddingValues(8.dp)
+        }
+    }
 
     Row(
         modifier = modifier
@@ -76,7 +88,7 @@ fun ChatMessage(
                 }
             )
             .hoverable(source)
-            .padding(8.dp)
+            .padding(padding)
             .pointerInput(Unit) {
                 detectTapGestures(
                     matcher = PointerMatcher.pointer(
@@ -89,19 +101,25 @@ fun ChatMessage(
                 }
             }
     ) {
-        Avatar()
+        if (!sameAuthorPrev) {
+            Avatar()
 
-        Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(6.dp))
+        } else {
+            Spacer(modifier = Modifier.width(48.dp))
+        }
 
         Column {
-            MessageHeader(
-                authorName = message.authorId.substringBefore('@'),
-                date = formatter.format(
-                    ZonedDateTime
-                        .parse(message.published)
-                        .withZoneSameInstant(ZoneOffset.systemDefault())
+            if (!sameAuthorPrev) {
+                MessageHeader(
+                    authorName = message.authorId.substringBefore('@'),
+                    date = formatter.format(
+                        ZonedDateTime
+                            .parse(message.published)
+                            .withZoneSameInstant(ZoneOffset.systemDefault())
+                    )
                 )
-            )
+            }
 
             MessageBody(message = message)
         }

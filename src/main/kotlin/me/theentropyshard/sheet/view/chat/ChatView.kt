@@ -21,12 +21,16 @@ package me.theentropyshard.sheet.view.chat
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.theentropyshard.sheet.model.Message
+
+fun <E> List<E>.safeIdx(idx: Int): E {
+    return this[idx.coerceIn(0, this.size - 1)]
+}
 
 @Composable
 fun ChatView(
@@ -45,13 +49,25 @@ fun ChatView(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                state = state,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                state = state
             ) {
-                items(items = messages, key = { it.id }) {
+                itemsIndexed(items = messages, key = { _, m -> m.id }) { index, message ->
+                    val sameAuthorPrev = messages.safeIdx(index - 1).authorId == message.authorId
+                    var sameAuthorNext = messages.safeIdx(index + 1).authorId == message.authorId
+
+                    if (index + 1 >= messages.size) {
+                        sameAuthorNext = false
+                    }
+
+                    if (index != 0) {
+                        Spacer(modifier = modifier.height(if (sameAuthorPrev) 0.dp else 16.dp))
+                    }
+
                     ChatMessage(
                         modifier = Modifier.fillMaxWidth(),
-                        message = it,
+                        message = message,
+                        sameAuthorPrev = sameAuthorPrev,
+                        sameAuthorNext = sameAuthorNext,
                         onContextMenuAction = onContextMenuAction
                     )
                 }
