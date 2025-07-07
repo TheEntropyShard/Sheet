@@ -52,7 +52,12 @@ fun ChatView(
                 state = state
             ) {
                 itemsIndexed(items = messages, key = { _, m -> m.id }) { index, message ->
-                    val sameAuthorPrev = messages.safeIdx(index - 1).authorId == message.authorId
+                    var sameAuthorPrev = messages.safeIdx(index - 1).authorId == message.authorId
+
+                    if (index - 1 < 0) {
+                        sameAuthorPrev = false
+                    }
+
                     var sameAuthorNext = messages.safeIdx(index + 1).authorId == message.authorId
 
                     if (index + 1 >= messages.size) {
