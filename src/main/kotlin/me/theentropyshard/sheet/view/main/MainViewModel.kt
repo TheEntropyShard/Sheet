@@ -66,6 +66,7 @@ class MainViewModel : ViewModel() {
     val relationships = mutableStateListOf<PrivateRelationship>()
 
     private var sequence: Int = 0
+    private var reconnectAttempts: Int = 0
 
     fun loggedIn() {
         createWebSocket()
@@ -278,6 +279,15 @@ class MainViewModel : ViewModel() {
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 logger.error("WebSocket failure", t)
+
+                reconnectAttempts++
+
+                if (reconnectAttempts <= 5) {
+                    logger.info("Trying to reconnect WebSocket. Attempt: $reconnectAttempts")
+                    createWebSocket()
+                } else {
+                    logger.warn("Not trying to reconnect WebSocket, too many attempts: $reconnectAttempts")
+                }
             }
         }
 
