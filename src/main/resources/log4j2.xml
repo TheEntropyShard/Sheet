@@ -3,7 +3,7 @@
     <Appenders>
         <RollingRandomAccessFile name="FileLogger" fileName="logs/latest.log"
                                  filePattern="logs/$${date:MM-yyyy}/app-%d{dd-MM-yyyy}-%i.log.gz">
-            <PatternLayout pattern="[%d{dd-MM-yyyy HH:mm:ss}] %level %logger - %msg%n" charset="866"/>
+            <PatternLayout pattern="[%d{dd-MM-yyyy HH:mm:ss}] %level %logger - %msg%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy/>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
