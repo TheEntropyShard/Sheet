@@ -521,4 +521,109 @@ class MainViewModel : ViewModel() {
             })
         }
     }
+
+    fun createDMChannel(user: String, name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val data = JsonObject()
+            data.addProperty("name", name)
+
+            val request = Request.Builder()
+                .url("${instance}/users/${user}/channels")
+                .header("Authorization", "Bearer $token")
+                .post(data.toRequestBody())
+                .build()
+
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    logger.error("Failed to send request to create DM channel $user", e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to create DM channel: {}", response.body!!.string())
+
+                        return
+                    }
+
+                    println(response.body!!.string())
+                }
+            })
+        }
+
+    }
+
+    fun addFriend(user: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val data = JsonObject()
+            data.addProperty("type", "pending")
+
+            val request = Request.Builder()
+                .url("${instance}/users/${user}/relationship")
+                .header("Authorization", "Bearer $token")
+                .post(data.toRequestBody())
+                .build()
+
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    logger.error("Failed to send request to add friend for $user", e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to add friend: {}", response.body!!.string())
+                    }
+
+                    response.closeQuietly()
+                }
+            })
+        }
+    }
+
+    fun acceptRelationship(user: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${instance}/users/${user}/relationship")
+                .header("Authorization", "Bearer $token")
+                .post(FormBody.Builder().build())
+                .build()
+
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    logger.error("Failed to send request to accept relationship for $user", e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to accept relationship: {}", response.body!!.string())
+                    }
+
+                    response.closeQuietly()
+                }
+            })
+        }
+    }
+
+    fun removeRelationship(user: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val request = Request.Builder()
+                .url("${instance}/users/${user}/relationship")
+                .header("Authorization", "Bearer $token")
+                .delete()
+                .build()
+
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    logger.error("Failed to send request to remove relationship for $user", e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (!response.isSuccessful) {
+                        logger.error("Failed to remove relationship: {}", response.body!!.string())
+                    }
+
+                    response.closeQuietly()
+                }
+            })
+        }
+    }
 }
