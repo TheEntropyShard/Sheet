@@ -70,12 +70,12 @@ fun ChannelList(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(items = channels, key = { it.id }) {
+                items(items = channels, key = { it.mention }) {
                     ChannelItem(
                         name = it.name,
                         onMenuItemClick = { action -> onChannelMenuItemClick(action, it) },
                         selected = isChannelSelected(it)
-                    ) { onClick(it.id) }
+                    ) { onClick(it.mention) }
                 }
             }
         }

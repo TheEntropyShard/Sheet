@@ -124,14 +124,14 @@ class MainViewModel : ViewModel() {
 
                                 for (channel in (guildElement as JsonObject)["channels"].asJsonArray) {
                                     val parsedChannel = gson.fromJson(channel, PublicGuildTextChannel::class)
-                                    parsedChannel.guildId = guild.completeId()
+                                    parsedChannel.guild = guild.mention
 
                                     channels += parsedChannel
                                 }
                             }
 
                             viewModelScope.launch {
-                                selectGuild(guilds[0].id)
+                                selectGuild(guilds[0].mention)
                             }
                         }
 
@@ -171,8 +171,8 @@ class MainViewModel : ViewModel() {
 
                         val shootMessage = messages.find { message ->
                             message.channelId == channels.find { channel ->
-                                channel.id == channelId
-                            }?.completeId() && message.id == messageId
+                                channel.mention == channelId
+                            }?.mention && message.id == messageId
                         }
 
                         if (shootMessage != null) {
@@ -197,9 +197,9 @@ class MainViewModel : ViewModel() {
                     }
 
                     "GUILD_DELETE" -> {
-                        val guildId = message["d"].asJsonObject["guild_id"].asString
+                        val guildMention = message["d"].asJsonObject["guild"].asString
 
-                        val guild = guilds.find { guild -> guild.id == guildId }
+                        val guild = guilds.find { guild -> guild.mention == guildMention }
 
                         if (guild != null) {
                             guilds -= guild
@@ -208,9 +208,8 @@ class MainViewModel : ViewModel() {
 
                     "CHANNEL_CREATE" -> {
                         val channel = gson.fromJson(message["d"].asJsonObject["channel"], PublicGuildTextChannel::class)
-                        channel.guildId += "@${channel.domain}"
 
-                        val guild = guilds.find { guild -> guild.completeId() == channel.guildId }!!
+                        val guild = guilds.find { guild -> guild.mention == channel.guild }!!
                         guild.channels.add(channel)
 
                         channels += channel
@@ -222,7 +221,7 @@ class MainViewModel : ViewModel() {
                         val guildId = message["d"].asJsonObject["guild_id"].asString
 
                         channels.removeIf { channel ->
-                            channel.completeId() == channelId && channel.guildId == guildId
+                            channel.mention == channelId && channel.guild == guildId
                         }
                     }
 
@@ -231,7 +230,7 @@ class MainViewModel : ViewModel() {
                             gson.fromJson(message["d"].asJsonObject["channel"], PublicGuildTextChannel::class)
 
                         val foundChannel =
-                            channels.find { channel -> channel.completeId() == updatedChannel.completeId() }
+                            channels.find { channel -> channel.mention == updatedChannel.mention }
 
                         if (foundChannel != null) {
                             channels[channels.indexOf(foundChannel)] = PublicGuildTextChannel(updatedChannel)
@@ -257,7 +256,7 @@ class MainViewModel : ViewModel() {
                     }
 
                     "ROLE_CREATE" -> {
-                        println("warn: unhandled message: ROLE_ADD")
+                        println("warn: unhandled message: ROLE_CREATE")
                     }
 
                     "ROLE_MEMBER_ADD" -> {
@@ -288,7 +287,7 @@ class MainViewModel : ViewModel() {
     fun subscribeForChannelMembersRange(min: Int = 0, max: Int = 100) {
         viewModelScope.launch(Dispatchers.IO) {
             webSocket.send(
-                "{ \"t\": \"members\", \"channel_id\": \"${_currentChannel.value?.completeId()}\", " +
+                "{ \"t\": \"members\", \"channel_id\": \"${_currentChannel.value?.mention}\", " +
                         "\"range\": [$min, $max] }"
             )
         }
@@ -300,7 +299,7 @@ class MainViewModel : ViewModel() {
             data.addProperty("content", text)
 
             val request = Request.Builder()
-                .url("${instance}/channel/${_currentChannel.value?.completeId()}/messages")
+                .url("${instance}/channel/${_currentChannel.value?.mention}/messages")
                 .header("Authorization", "Bearer $token")
                 .post(data.toRequestBody())
                 .build()
@@ -323,9 +322,12 @@ class MainViewModel : ViewModel() {
 
     fun selectGuild(id: String) {
         for (guild in guilds) {
-            if (guild.id == id) {
+            if (guild.mention == id) {
                 _currentGuild.value = guild
-                selectChannel(guild.channels[0].id)
+
+                if (guild.channels.isNotEmpty()) {
+                    selectChannel(guild.channels[0].mention)
+                }
 
                 break
             }
@@ -334,9 +336,9 @@ class MainViewModel : ViewModel() {
 
     fun selectChannel(id: String) {
         for (channel in _currentGuild.value!!.channels) {
-            if (channel.id == id) {
+            if (channel.mention == id) {
                 _currentChannel.value = channel
-                loadMessages(channelId = channel.completeId(), replace = true)
+                loadMessages(channelId = channel.mention, replace = true)
                 subscribeForChannelMembersRange()
 
                 break
@@ -390,7 +392,7 @@ class MainViewModel : ViewModel() {
             data.addProperty("name", name)
 
             val request = Request.Builder()
-                .url("${instance}/guild/${_currentGuild.value?.completeId()}/channel")
+                .url("${instance}/guild/${_currentGuild.value?.mention}/channel")
                 .header("Authorization", "Bearer $token")
                 .post(data.toRequestBody())
                 .build()
@@ -441,7 +443,7 @@ class MainViewModel : ViewModel() {
     fun deleteGuild() {
         viewModelScope.launch(Dispatchers.IO) {
             val request = Request.Builder()
-                .url("${instance}/guild/${_currentGuild.value?.completeId()}")
+                .url("${instance}/guild/${_currentGuild.value?.mention}")
                 .header("Authorization", "Bearer $token")
                 .delete()
                 .build()

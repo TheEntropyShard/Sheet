@@ -19,7 +19,6 @@
 package me.theentropyshard.sheet.api.model;
 
 public class PublicChannel {
-    public String id;
+    public String mention;
     public String name;
-    public String domain;
 }

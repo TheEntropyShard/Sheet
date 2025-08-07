@@ -102,13 +102,13 @@ fun MainView(
             initial = channelForRename!!.name,
             onDismissRequest = { renameChannelDialogVisible = false }
         ) { name ->
-            model.renameChannel(channelForRename!!.completeId(), name)
+            model.renameChannel(channelForRename!!.mention, name)
             channelForDeletion = null
         }
     }
 
     if (createInviteDialogVisible) {
-        CreateInviteDialog(guildId = currentGuild!!.completeId()) {
+        CreateInviteDialog(guildId = currentGuild!!.mention) {
             createInviteDialogVisible = false
         }
     }
@@ -119,7 +119,7 @@ fun MainView(
             text = "Are you sure you want to delete channel «${channelForDeletion!!.name}»?"
         ) { yes ->
             if (yes) {
-                model.deleteChannel(channelForDeletion!!.completeId())
+                model.deleteChannel(channelForDeletion!!.mention)
                 channelForDeletion = null
             }
 
@@ -158,7 +158,7 @@ fun MainView(
             GuildList(
                 modifier = Modifier.fillMaxHeight(),
                 guilds = guilds,
-                isGuildSelected = { it.id == currentGuild?.id },
+                isGuildSelected = { it.mention == currentGuild?.mention },
                 onMeClick = {
 
                 },
@@ -174,9 +174,9 @@ fun MainView(
             if (currentGuild != null) {
                 ChannelList(
                     modifier = Modifier.fillMaxHeight().width(200.dp),
-                    channels = channels.filter { channel -> channel.guildId == currentGuild?.completeId() },
+                    channels = channels.filter { channel -> channel.guild == currentGuild?.mention },
                     isChannelSelected = { channel ->
-                        channel.id == currentChannel?.id
+                        channel.mention == currentChannel?.mention
                     },
                     onGuildMenuAction = { action ->
                         when (action) {
@@ -214,7 +214,7 @@ fun MainView(
                 ChatView(
                     modifier = Modifier.fillMaxSize().weight(1f),
                     state = state,
-                    messages = messages.filter { message -> message.channelId == currentChannel?.completeId() }
+                    messages = messages.filter { message -> message.channelId == currentChannel?.mention }
                         .reversed(),
                     onAddAttachmentClick = {
                         isFileChooserOpen = true
@@ -230,7 +230,7 @@ fun MainView(
                             }
 
                             MessageContextMenuAction.Delete -> {
-                                model.deleteMessage(currentChannel!!.completeId(), message.id)
+                                model.deleteMessage(currentChannel!!.mention, message.id)
                             }
                         }
                     }
@@ -248,7 +248,7 @@ fun MainView(
             }
 
             if (isAttachmentOpen) {
-                AttachmentDialog(currentChannel!!.completeId(), selectedFiles = selectedFiles) {
+                AttachmentDialog(currentChannel!!.mention, selectedFiles = selectedFiles) {
                     isAttachmentOpen = false
                 }
             }

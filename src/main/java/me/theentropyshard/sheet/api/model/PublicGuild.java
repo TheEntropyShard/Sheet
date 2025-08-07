@@ -22,13 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PublicGuild {
-    public String id;
+    public String mention;
     public String name;
-    public String domain;
     public List<PublicGuildTextChannel> channels = new ArrayList<>();
     public List<Role> roles = new ArrayList<>();
-
-    public String completeId() {
-        return this.id + "@" + this.domain;
-    }
 }

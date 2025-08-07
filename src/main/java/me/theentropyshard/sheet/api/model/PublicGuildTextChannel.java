@@ -21,34 +21,26 @@ package me.theentropyshard.sheet.api.model;
 import com.google.gson.annotations.SerializedName;
 
 public class PublicGuildTextChannel {
-    public String id;
+    public String mention;
     public String name;
-    public String domain;
-    @SerializedName("guild_id")
-    public String guildId;
+    public String guild;
 
     public PublicGuildTextChannel() {
 
     }
 
     public PublicGuildTextChannel(PublicGuildTextChannel channel) {
-        this.id = channel.id;
+        this.mention = channel.mention;
         this.name = channel.name;
-        this.domain = channel.domain;
-        this.guildId = channel.guildId;
-    }
-
-    public String completeId() {
-        return this.id + "@" + this.domain;
+        this.guild = channel.guild;
     }
 
     @Override
     public String toString() {
         return "PublicGuildTextChannel{" +
-            "id='" + this.id + '\'' +
+            "mention='" + this.mention + '\'' +
             ", name='" + this.name + '\'' +
-            ", domain='" + this.domain + '\'' +
-            ", guildId='" + this.guildId + '\'' +
+            ", guild='" + this.guild + '\'' +
             '}';
     }
 }

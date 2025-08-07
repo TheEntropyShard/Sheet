@@ -21,10 +21,9 @@ package me.theentropyshard.sheet.api.model;
 import com.google.gson.annotations.SerializedName;
 
 public class PublicUser {
-    public String id;
+    public String mention;
     public String name;
     public String summary;
     @SerializedName("display_name")
     public String displayName;
-    public String domain;
 }

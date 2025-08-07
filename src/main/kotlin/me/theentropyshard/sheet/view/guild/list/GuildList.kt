@@ -61,7 +61,7 @@ fun GuildList(
         }
 
         items(guilds) {
-            GuildItem(selected = isGuildSelected(it), onClick = { onChannelClick(it.id) }) {
+            GuildItem(selected = isGuildSelected(it), onClick = { onChannelClick(it.mention) }) {
                 Text(text = "${it.name[0]}")
             }
         }
