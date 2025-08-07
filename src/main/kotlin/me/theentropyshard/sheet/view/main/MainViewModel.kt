@@ -33,12 +33,15 @@ import me.theentropyshard.sheet.Sheet.httpClient
 import me.theentropyshard.sheet.Sheet.instance
 import me.theentropyshard.sheet.Sheet.token
 import me.theentropyshard.sheet.Sheet.webSocket
+import me.theentropyshard.sheet.api.model.PrivateDmChannel
 import me.theentropyshard.sheet.api.model.PrivateRelationship
 import me.theentropyshard.sheet.api.model.PublicGuild
 import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 import me.theentropyshard.sheet.api.model.PublicMessage
 import me.theentropyshard.sheet.fromJson
+import me.theentropyshard.sheet.model.Channel
 import me.theentropyshard.sheet.model.Message
+import me.theentropyshard.sheet.model.toChannel
 import me.theentropyshard.sheet.model.toMessage
 import me.theentropyshard.sheet.toRequestBody
 import okhttp3.*
@@ -46,6 +49,12 @@ import okhttp3.internal.closeQuietly
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.util.*
+
+enum class CurrentView {
+    Friends,
+    Private,
+    Guild
+}
 
 class MainViewModel : ViewModel() {
     private val logger = LogManager.getLogger()
@@ -56,14 +65,18 @@ class MainViewModel : ViewModel() {
     private val _currentGuild: MutableStateFlow<PublicGuild?> = MutableStateFlow(null)
     val currentGuild = _currentGuild.asStateFlow()
 
-    private val _currentChannel: MutableStateFlow<PublicGuildTextChannel?> = MutableStateFlow(null)
+    private val _currentChannel: MutableStateFlow<Channel?> = MutableStateFlow(null)
     val currentChannel = _currentChannel.asStateFlow()
 
+    private val _currentView = MutableStateFlow(CurrentView.Guild)
+    val currentView = _currentView.asStateFlow()
+
     val guilds = mutableStateListOf<PublicGuild>()
-    val channels = mutableStateListOf<PublicGuildTextChannel>()
+    val guildChannels = mutableStateListOf<PublicGuildTextChannel>()
     val messages = mutableStateListOf<Message>()
     val members = mutableStateListOf<JsonObject>()
     val relationships = mutableStateListOf<PrivateRelationship>()
+    val privateChannels = mutableStateListOf<PrivateDmChannel>()
 
     private var sequence: Int = 0
     private var reconnectAttempts: Int = 0
@@ -127,7 +140,7 @@ class MainViewModel : ViewModel() {
                                     val parsedChannel = gson.fromJson(channel, PublicGuildTextChannel::class)
                                     parsedChannel.guild = guild.mention
 
-                                    channels += parsedChannel
+                                    guildChannels += parsedChannel
                                 }
                             }
 
@@ -140,6 +153,12 @@ class MainViewModel : ViewModel() {
 
                         for (relationshipElement in relationshipsArray) {
                             relationships += gson.fromJson(relationshipElement, PrivateRelationship::class)
+                        }
+
+                        val channelsArray = message["d"].asJsonObject["channels"].asJsonArray
+
+                        for (channelElement in channelsArray) {
+                            privateChannels += gson.fromJson(channelElement, PrivateDmChannel::class)
                         }
 
                         startHeartbeat()
@@ -167,13 +186,13 @@ class MainViewModel : ViewModel() {
                     }
 
                     "MESSAGE_DELETE" -> {
-                        val channelId = message["d"].asJsonObject["channel_id"].asString
-                        val messageId = message["d"].asJsonObject["message_id"].asString
+                        val channelMention = message["d"].asJsonObject["channel"].asString
+                        val messageMention = message["d"].asJsonObject["message"].asString
 
                         val shootMessage = messages.find { message ->
-                            message.channelId == channels.find { channel ->
-                                channel.mention == channelId
-                            }?.mention && message.id == messageId
+                            message.channelId == guildChannels.find { channel ->
+                                channel.mention == channelMention
+                            }?.mention && message.id == messageMention
                         }
 
                         if (shootMessage != null) {
@@ -182,11 +201,21 @@ class MainViewModel : ViewModel() {
                     }
 
                     "RELATIONSHIP_CREATE" -> {
-                        println("warn: unhandled message: RELATIONSHIP_CREATE")
+                        val relationship =
+                            gson.fromJson(message["d"].asJsonObject["relationship"], PrivateRelationship::class)
+                        relationships += relationship
                     }
 
                     "RELATIONSHIP_DELETE" -> {
-                        println("warn: unhandled message: RELATIONSHIP_DELETE")
+                        val userMention = message["d"].asJsonObject["user"].asString
+                        relationships.removeIf { it.user.mention == userMention }
+                    }
+
+                    "RELATIONSHIP_UPDATE" -> {
+                        val relationship =
+                            gson.fromJson(message["d"].asJsonObject["relationship"], PrivateRelationship::class)
+                        relationships.removeIf { it.user.mention == relationship.user.mention }
+                        relationships += relationship
                     }
 
                     "GUILD_CREATE" -> {
@@ -208,21 +237,43 @@ class MainViewModel : ViewModel() {
                     }
 
                     "CHANNEL_CREATE" -> {
-                        val channel = gson.fromJson(message["d"].asJsonObject["channel"], PublicGuildTextChannel::class)
+                        val channelObj = gson.fromJson(message["d"].asJsonObject["channel"], JsonObject::class)
 
-                        val guild = guilds.find { guild -> guild.mention == channel.guild }!!
-                        guild.channels.add(channel)
+                        if (channelObj.has("guild")) {
+                            val channel = gson.fromJson(channelObj, PublicGuildTextChannel::class)
 
-                        channels += channel
-                        _currentChannel.update { channel }
+                            val guild = guilds.find { guild -> guild.mention == channel.guild }!!
+                            guild.channels.add(channel)
+
+                            guildChannels += channel
+                            _currentChannel.update {
+                                Channel(
+                                    mention = channel.mention,
+                                    name = channel.name,
+                                    guild = guild.mention
+                                )
+                            }
+                        } else {
+                            val channel = gson.fromJson(channelObj, PrivateDmChannel::class)
+
+                            privateChannels += channel
+                            _currentChannel.update {
+                                Channel(
+                                    mention = channel.mention,
+                                    name = channel.name,
+                                    owner = channel.owner,
+                                    recipients = channel.recipients
+                                )
+                            }
+                        }
                     }
 
                     "CHANNEL_DELETE" -> {
-                        val channelId = message["d"].asJsonObject["channel_id"].asString
-                        val guildId = message["d"].asJsonObject["guild_id"].asString
+                        val channelMention = message["d"].asJsonObject["channel"].asString
+                        val guildMention = message["d"].asJsonObject["guild"].asString
 
-                        channels.removeIf { channel ->
-                            channel.mention == channelId && channel.guild == guildId
+                        guildChannels.removeIf { channel ->
+                            channel.mention == channelMention && channel.guild == guildMention
                         }
                     }
 
@@ -231,10 +282,10 @@ class MainViewModel : ViewModel() {
                             gson.fromJson(message["d"].asJsonObject["channel"], PublicGuildTextChannel::class)
 
                         val foundChannel =
-                            channels.find { channel -> channel.mention == updatedChannel.mention }
+                            guildChannels.find { channel -> channel.mention == updatedChannel.mention }
 
                         if (foundChannel != null) {
-                            channels[channels.indexOf(foundChannel)] = PublicGuildTextChannel(updatedChannel)
+                            guildChannels[guildChannels.indexOf(foundChannel)] = PublicGuildTextChannel(updatedChannel)
                         }
                     }
 
@@ -294,6 +345,18 @@ class MainViewModel : ViewModel() {
         webSocket = httpClient.newWebSocket(request, listener)
     }
 
+    fun switchToFriendsView() {
+        _currentView.value = CurrentView.Friends
+    }
+
+    fun switchToPrivateView() {
+        _currentView.value = CurrentView.Private
+    }
+
+    fun switchToGuildView() {
+        _currentView.value = CurrentView.Guild
+    }
+
     fun subscribeForChannelMembersRange(min: Int = 0, max: Int = 100) {
         viewModelScope.launch(Dispatchers.IO) {
             webSocket.send(
@@ -345,14 +408,14 @@ class MainViewModel : ViewModel() {
     }
 
     fun selectChannel(id: String) {
-        for (channel in _currentGuild.value!!.channels) {
-            if (channel.mention == id) {
-                _currentChannel.value = channel
-                loadMessages(channelId = channel.mention, replace = true)
-                subscribeForChannelMembersRange()
+        val channel =
+            _currentGuild.value?.channels?.find { it.mention == id }?.toChannel() ?:
+            privateChannels.find { it.mention == id }?.toChannel()
 
-                break
-            }
+        channel?.let {
+            _currentChannel.value = it
+            loadMessages(channelId = it.mention, replace = true)
+            subscribeForChannelMembersRange()
         }
     }
 

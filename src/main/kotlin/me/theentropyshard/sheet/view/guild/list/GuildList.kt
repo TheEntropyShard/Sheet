@@ -40,15 +40,16 @@ fun GuildList(
     guilds: List<PublicGuild>,
     isGuildSelected: (PublicGuild) -> Boolean,
     onMeClick: () -> Unit,
+    isMeSelected: Boolean,
     onAddGuildClick: () -> Unit,
-    onChannelClick: (String) -> Unit,
+    onGuildClick: (String) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
-            GuildItem(selected = false, onClick = onMeClick) {
+            GuildItem(selected = isMeSelected, onClick = onMeClick) {
                 Icon(
                     imageVector = Icons.Filled.Person,
                     contentDescription = "Click to show private chats"
@@ -61,7 +62,7 @@ fun GuildList(
         }
 
         items(guilds) {
-            GuildItem(selected = isGuildSelected(it), onClick = { onChannelClick(it.mention) }) {
+            GuildItem(selected = isGuildSelected(it), onClick = { onGuildClick(it.mention) }) {
                 Text(text = "${it.name[0]}")
             }
         }

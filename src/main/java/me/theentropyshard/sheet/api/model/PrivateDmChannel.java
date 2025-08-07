@@ -18,7 +18,11 @@
 
 package me.theentropyshard.sheet.api.model;
 
-public class PublicChannel {
+import java.util.List;
+
+public class PrivateDmChannel {
     public String mention;
     public String name;
+    public String owner;
+    public List<String> recipients;
 }

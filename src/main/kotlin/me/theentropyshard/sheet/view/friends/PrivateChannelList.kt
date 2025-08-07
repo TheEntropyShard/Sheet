@@ -16,46 +16,35 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.theentropyshard.sheet.view.guild.channel
+package me.theentropyshard.sheet.view.friends
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
+import me.theentropyshard.sheet.api.model.PrivateDmChannel
+import me.theentropyshard.sheet.view.guild.channel.ChannelItem
+import me.theentropyshard.sheet.view.guild.channel.ChannelMenuItemAction
 
 @Composable
-fun ChannelList(
+fun PrivateChannelList(
     modifier: Modifier = Modifier,
-    channels: List<PublicGuildTextChannel>,
-    guildName: String,
-    isChannelSelected: (PublicGuildTextChannel) -> Boolean,
-    onGuildMenuAction: (GuildMenuItemAction) -> Unit,
-    onChannelMenuItemClick: (ChannelMenuItemAction, PublicGuildTextChannel) -> Unit,
+    channels: List<PrivateDmChannel>,
+    isChannelSelected: (PrivateDmChannel) -> Boolean,
+    onChannelMenuItemClick: (ChannelMenuItemAction, PrivateDmChannel) -> Unit,
     onClick: (String) -> Unit
 ) {
-    var menuVisible by remember { mutableStateOf(false) }
-
     Box(modifier = modifier, contentAlignment = Alignment.TopStart) {
         Column {
-            GuildMenu(
-                visible = menuVisible,
-                onDismissRequest = { menuVisible = false }
-            ) { action ->
-                onGuildMenuAction(action)
-            }
+
         }
 
         Column(modifier = modifier) {
-            GuildHeader(
-                guildName = guildName,
-                menuVisible = menuVisible,
-                onClick = { menuVisible = true }
-            )
+            PrivateHeader()
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -70,7 +59,7 @@ fun ChannelList(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(items = channels, key = { it.mention }) {
+                items(items = channels) {
                     ChannelItem(
                         name = it.name,
                         onMenuItemClick = { action -> onChannelMenuItemClick(action, it) },
