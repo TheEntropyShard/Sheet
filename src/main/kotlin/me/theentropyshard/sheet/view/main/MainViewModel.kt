@@ -508,7 +508,7 @@ class MainViewModel : ViewModel() {
 
             httpClient.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request for to delete message", e)
+                    logger.error("Failed to send request to delete message", e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
