@@ -85,7 +85,19 @@ fun <T : Any> Gson.fromJson(json: String?, klass: KClass<T>): T {
 }
 
 fun Any.toRequestBody(): RequestBody {
-    return Sheet.gson.toJson(this).toRequestBody("application/json; charset=utf-8".toMediaType())
+    if (this is RequestBody) {
+        return this
+    }
+
+    val payload: String
+
+    if (this is String) {
+        payload = this
+    } else {
+        payload = Sheet.gson.toJson(this)
+    }
+
+    return payload.toRequestBody("application/json; charset=utf-8".toMediaType())
 }
 
 @Composable

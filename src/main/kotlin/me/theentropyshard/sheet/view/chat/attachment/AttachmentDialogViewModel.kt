@@ -104,14 +104,14 @@ class AttachmentDialogViewModel : ViewModel() {
                 if (!response.isSuccessful) {
                     logger.error(
                         "Could not create attachments. Code: {}, Message: {}",
-                        response.code, response.body?.string()
+                        response.code, response.body.string()
                     )
 
                     return@launch
                 }
 
                 val type = object : TypeToken<List<JsonObject>>() {}.type
-                attachmentsData = gson.fromJson(response.body!!.string(), type)
+                attachmentsData = gson.fromJson(response.body.string(), type)
             }
 
             val uploadedHashes = mutableMapOf<String, String>()
@@ -164,7 +164,7 @@ class AttachmentDialogViewModel : ViewModel() {
                 override fun onResponse(call: Call, response: Response) {
                     response.use {
                         println(response.code)
-                        println(response.body?.string())
+                        println(response.body.string())
                     }
                 }
             })

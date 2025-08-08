@@ -33,14 +33,12 @@ import me.theentropyshard.sheet.Sheet.httpClient
 import me.theentropyshard.sheet.Sheet.instance
 import me.theentropyshard.sheet.Sheet.token
 import me.theentropyshard.sheet.Sheet.webSocket
-import me.theentropyshard.sheet.api.model.PrivateDmChannel
-import me.theentropyshard.sheet.api.model.PrivateRelationship
-import me.theentropyshard.sheet.api.model.PublicGuild
-import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
-import me.theentropyshard.sheet.api.model.PublicMessage
+import me.theentropyshard.sheet.api.model.*
 import me.theentropyshard.sheet.fromJson
 import me.theentropyshard.sheet.model.Channel
 import me.theentropyshard.sheet.model.Message
+import me.theentropyshard.sheet.model.event.GatewayEvent
+import me.theentropyshard.sheet.model.event.HeartbeatEvent
 import me.theentropyshard.sheet.model.toChannel
 import me.theentropyshard.sheet.model.toMessage
 import me.theentropyshard.sheet.toRequestBody
@@ -54,6 +52,10 @@ enum class CurrentView {
     Friends,
     Private,
     Guild
+}
+
+fun WebSocket.send(payload: GatewayEvent) {
+    this.send(gson.toJson(payload))
 }
 
 class MainViewModel : ViewModel() {
@@ -89,64 +91,55 @@ class MainViewModel : ViewModel() {
         Timer(true).schedule(
             object : TimerTask() {
                 override fun run() {
-                    webSocket.send("{ \"t\": \"heartbeat\", \"s\": $sequence }")
+                    val msg = gson.toJson(HeartbeatEvent(sequence))
+                    webSocket.send(msg)
+                    logger.info("Sent heartbeat: {}", msg)
                 }
             }, 0, 4500L
         )
     }
 
     fun createWebSocket() {
-        val url = if (instance.startsWith("http://")) {
-            instance.replace("http", "ws")
-        } else if (instance.startsWith("https://")) {
-            instance.replace("https", "wss")
-        } else {
-            throw RuntimeException("Wrong instance url: $instance")
-        }
-
-        val request = Request.Builder()
-            .url(url)
-            .build()
-
         val listener = object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 val message = JsonObject()
                 message.addProperty("t", "identify")
                 message.addProperty("token", token)
 
-                webSocket.send(gson.toJson(message))
+                val msg = gson.toJson(message)
+                webSocket.send(msg)
+                logger.info("Sent identify: {}", msg)
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
                 val seq = sequence++
 
-                val message = gson.fromJson(text, JsonObject::class.java)
+                logger.info("Received message: {}", text)
+                val message = gson.fromJson(text, JsonObject::class)
 
-                if (message["t"].asString != "HEARTBEAT_ACK") {
-                    println(message)
-                }
+                //if (message["t"].asString != "HEARTBEAT_ACK") {
+                println(message)
+                //}
 
                 when (message["t"].asString) {
                     "READY" -> {
                         val guildsArray = message["d"].asJsonObject["guilds"].asJsonArray
 
-                        if (guildsArray.size() > 0) {
-                            for (guildElement in guildsArray) {
-                                val guild = gson.fromJson(guildElement, PublicGuild::class)
+                        for (guildElement in guildsArray) {
+                            val guild = gson.fromJson(guildElement, PublicGuild::class)
 
-                                guilds += guild
+                            guilds += guild
 
-                                for (channel in (guildElement as JsonObject)["channels"].asJsonArray) {
-                                    val parsedChannel = gson.fromJson(channel, PublicGuildTextChannel::class)
-                                    parsedChannel.guild = guild.mention
+                            for (channel in (guildElement as JsonObject)["channels"].asJsonArray) {
+                                val parsedChannel = gson.fromJson(channel, PublicGuildTextChannel::class)
+                                parsedChannel.guild = guild.mention
 
-                                    guildChannels += parsedChannel
-                                }
+                                guildChannels += parsedChannel
                             }
+                        }
 
-                            viewModelScope.launch {
-                                selectGuild(guilds[0].mention)
-                            }
+                        viewModelScope.launch {
+                            selectGuild(guilds[0].mention)
                         }
 
                         val relationshipsArray = message["d"].asJsonObject["relationships"].asJsonArray
@@ -180,7 +173,7 @@ class MainViewModel : ViewModel() {
 
                     "MESSAGE_CREATE" -> {
                         val shootMessage =
-                            gson.fromJson(message["d"].asJsonObject["message"], PublicMessage::class.java)
+                            gson.fromJson(message["d"].asJsonObject["message"], PublicMessage::class)
 
                         messages.add(0, shootMessage.toMessage())
                     }
@@ -219,8 +212,7 @@ class MainViewModel : ViewModel() {
                     }
 
                     "GUILD_CREATE" -> {
-                        val guild =
-                            gson.fromJson(message["d"].asJsonObject["guild"], PublicGuild::class.java)
+                        val guild = gson.fromJson(message["d"].asJsonObject["guild"], PublicGuild::class)
 
                         guilds += guild
                         _currentGuild.update { guild }
@@ -321,10 +313,17 @@ class MainViewModel : ViewModel() {
                 }
             }
 
+            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                when (code) {
+                    1000 -> logger.info("[onClosing] WebSocket was closed successfully")
+                    else -> logger.error("[onClosing] WebSocket was closed with code $code because $reason")
+                }
+            }
+
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 when (code) {
-                    1000 -> logger.info("WebSocket was closed successfully")
-                    else -> logger.error("WebSocket was closed with code $code because $reason")
+                    1000 -> logger.info("[onClosed] WebSocket was closed successfully")
+                    else -> logger.error("[onClosed] WebSocket was closed with code $code because $reason")
                 }
             }
 
@@ -342,6 +341,18 @@ class MainViewModel : ViewModel() {
             }
         }
 
+        val url = if (instance.startsWith("http://")) {
+            instance.replace("http", "ws")
+        } else if (instance.startsWith("https://")) {
+            instance.replace("https", "wss")
+        } else {
+            throw RuntimeException("Wrong instance url: $instance")
+        }
+
+        val request = Request.Builder()
+            .url(url)
+            .build()
+
         webSocket = httpClient.newWebSocket(request, listener)
     }
 
@@ -357,60 +368,20 @@ class MainViewModel : ViewModel() {
         _currentView.value = CurrentView.Guild
     }
 
-    fun subscribeForChannelMembersRange(min: Int = 0, max: Int = 100) {
-        viewModelScope.launch(Dispatchers.IO) {
-            webSocket.send(
-                "{ \"t\": \"members\", \"channel_id\": \"${_currentChannel.value?.mention}\", " +
-                        "\"range\": [$min, $max] }"
-            )
-        }
-    }
-
-    fun sendMessage(text: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val data = JsonObject()
-            data.addProperty("content", text)
-
-            val request = Request.Builder()
-                .url("${instance}/channel/${_currentChannel.value?.mention}/messages")
-                .header("Authorization", "Bearer $token")
-                .post(data.toRequestBody())
-                .build()
-
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request to send message", e)
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to send message: {}", response.body!!.string())
-                    }
-
-                    response.closeQuietly()
-                }
-            })
-        }
-    }
-
     fun selectGuild(id: String) {
-        for (guild in guilds) {
-            if (guild.mention == id) {
-                _currentGuild.value = guild
+        guilds.find { it.mention == id }?.let { guild ->
+            _currentGuild.value = guild
 
-                if (guild.channels.isNotEmpty()) {
-                    selectChannel(guild.channels[0].mention)
-                }
-
-                break
+            if (guild.channels.isNotEmpty()) {
+                selectChannel(guild.channels[0].mention)
             }
         }
     }
 
     fun selectChannel(id: String) {
         val channel =
-            _currentGuild.value?.channels?.find { it.mention == id }?.toChannel() ?:
-            privateChannels.find { it.mention == id }?.toChannel()
+            _currentGuild.value?.channels?.find { it.mention == id }?.toChannel()
+                ?: privateChannels.find { it.mention == id }?.toChannel()
 
         channel?.let {
             _currentChannel.value = it
@@ -419,274 +390,243 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun loadMessages(channelId: String, replace: Boolean = false) {
+    fun subscribeForChannelMembersRange(min: Int = 0, max: Int = 100) {
         viewModelScope.launch(Dispatchers.IO) {
-            val request = Request.Builder()
-                .url("${instance}/channel/$channelId/messages")
-                .header("Authorization", "Bearer $token")
-                .build()
+            val text = """
+                {
+                    "t": "members",
+                    "channel_id": "${_currentChannel.value?.mention}",
+                    "range": [$min, $max]
+                }
+                """
+            webSocket.send(
+                text
+            )
 
-            httpClient.newCall(request).enqueue(object : Callback {
+            logger.info("Subbed for members: {}", text)
+        }
+    }
+
+    class RequestHandler {
+        lateinit var failureHandler: (Throwable) -> Unit
+        lateinit var badHandler: (Response) -> Unit
+        lateinit var successHandler: (Response) -> Unit
+
+        fun failure(handler: (Throwable) -> Unit) {
+            failureHandler = handler
+        }
+
+        fun bad(handler: (Response) -> Unit) {
+            badHandler = handler
+        }
+
+        fun success(handler: (Response) -> Unit) {
+            successHandler = handler
+        }
+    }
+
+    fun request(url: String, handler: RequestHandler.() -> Unit, configure: Request.Builder.() -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val requestHandler = RequestHandler()
+
+            handler(requestHandler)
+
+            val builder = Request.Builder()
+                .url("$instance/$url")
+                .header("Authorization", "Bearer $token")
+
+            builder.configure()
+
+            httpClient.newCall(builder.build()).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request to load messages", e)
+                    requestHandler.failureHandler(e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to load messages: {}", response.body!!.string())
-
-                        response.closeQuietly()
-
-                        return
-                    }
-
-                    val shootMessages: MutableList<PublicMessage> = gson.fromJson(
-                        response.body!!.string(),
-                        object : TypeToken<MutableList<PublicMessage>>() {}.type
-                    )
-
-                    viewModelScope.launch {
-                        messages.apply {
-                            if (replace) {
-                                clear()
-                            }
-
-                            shootMessages.forEach { this += it.toMessage() }
-                        }
+                    if (response.isSuccessful) {
+                        requestHandler.successHandler(response)
+                    } else {
+                        requestHandler.badHandler(response)
                     }
                 }
             })
+        }
+    }
+
+    fun get(url: String, handler: RequestHandler.() -> Unit) {
+        request(url, handler) { get() }
+    }
+
+    fun post(url: String, body: () -> Any, handler: RequestHandler.() -> Unit) {
+        request(url, handler) { post(body().toRequestBody()) }
+    }
+
+    fun patch(url: String, body: () -> Any, handler: RequestHandler.() -> Unit) {
+        request(url, handler) { patch(body().toRequestBody()) }
+    }
+
+    fun delete(url: String, body: (() -> Any)? = null, handler: RequestHandler.() -> Unit) {
+        request(url, handler) {
+            if (body == null) {
+                delete()
+            } else {
+                delete(body().toRequestBody())
+            }
+        }
+    }
+
+    fun sendMessage(text: String) {
+        post(
+            url = "channel/${_currentChannel.value?.mention}/messages",
+            body = { JsonObject().apply { addProperty("content", text) } }
+        ) {
+            failure { logger.error("Failed to send request to send message", it) }
+
+            bad { logger.error("Failed to send message: {}", it.body.string()) }
+
+            success { it.closeQuietly() }
+        }
+    }
+
+    fun loadMessages(channelId: String, replace: Boolean = false) {
+        get("channel/$channelId/messages") {
+            failure { logger.error("Failed to send request to load messages", it) }
+
+            bad { logger.error("Failed to load messages: {}", it.body.string()) }
+
+            success { response ->
+                val shootMessages: List<PublicMessage> = gson.fromJson(
+                    response.body.string(),
+                    object : TypeToken<List<PublicMessage>>() {}.type
+                )
+
+                viewModelScope.launch {
+                    messages.apply {
+                        if (replace) {
+                            clear()
+                        }
+
+                        shootMessages.forEach { this += it.toMessage() }
+                    }
+                }
+            }
         }
     }
 
     fun createChannel(name: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val data = JsonObject()
-            data.addProperty("name", name)
-
-            val request = Request.Builder()
-                .url("${instance}/guild/${_currentGuild.value?.mention}/channel")
-                .header("Authorization", "Bearer $token")
-                .post(data.toRequestBody())
-                .build()
-
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request for to create channel", e)
+        post(
+            url = "guild/${_currentGuild.value?.mention}/channel",
+            body = {
+                JsonObject().apply {
+                    addProperty("name", name)
                 }
+            }
+        ) {
+            failure { logger.error("Failed to send request for to create channel", it) }
 
-                override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to create channel: {}", response.body!!.string())
-                    }
+            bad { logger.error("Failed to create channel: {}", it.body.string()) }
 
-                    response.closeQuietly()
-                }
-            })
+            success { it.closeQuietly() }
         }
     }
 
     fun renameChannel(channelId: String, name: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val data = JsonObject()
-            data.addProperty("name", name)
-
-            val request = Request.Builder()
-                .url("${instance}/channel/$channelId")
-                .header("Authorization", "Bearer $token")
-                .patch(data.toRequestBody())
-                .build()
-
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request for to rename channel", e)
+        patch(
+            url = "channel/$channelId",
+            body = {
+                JsonObject().apply {
+                    addProperty("name", name)
                 }
+            }
+        ) {
+            failure { logger.error("Failed to send request for to rename channel", it) }
 
-                override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to rename channel: {}", response.body!!.string())
-                    }
+            bad { logger.error("Failed to rename channel: {}", it.body.string()) }
 
-                    response.closeQuietly()
-                }
-            })
+            success { it.closeQuietly() }
         }
     }
 
     fun deleteGuild() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val request = Request.Builder()
-                .url("${instance}/guild/${_currentGuild.value?.mention}")
-                .header("Authorization", "Bearer $token")
-                .delete()
-                .build()
+        delete("guild/${_currentGuild.value?.mention}") {
+            failure { logger.error("Failed to send request for to delete guild", it) }
 
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request for to delete guild", e)
-                }
+            bad { logger.error("Failed to delete guild: {}", it.body.string()) }
 
-                override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to delete guild: {}", response.body!!.string())
-                    }
-
-                    response.closeQuietly()
-                }
-            })
+            success { it.closeQuietly() }
         }
     }
 
     fun deleteChannel(completeId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val request = Request.Builder()
-                .url("${instance}/channel/$completeId")
-                .header("Authorization", "Bearer $token")
-                .delete()
-                .build()
+        delete("channel/$completeId") {
+            failure { logger.error("Failed to send request for to delete channel", it) }
 
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request for to delete channel", e)
-                }
+            bad { logger.error("Failed to delete channel: {}", it.body.string()) }
 
-                override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to delete channel: {}", response.body!!.string())
-                    }
-
-                    response.closeQuietly()
-                }
-            })
+            success { it.closeQuietly() }
         }
     }
 
     fun deleteMessage(channelId: String, id: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val request = Request.Builder()
-                .url("${instance}/channel/$channelId/messages/$id")
-                .header("Authorization", "Bearer $token")
-                .delete()
-                .build()
+        delete("channel/$channelId/messages/$id") {
+            failure { logger.error("Failed to send request to delete message", it) }
 
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request to delete message", e)
-                }
+            bad { logger.error("Failed to delete message: {}", it.body.string()) }
 
-                override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to delete message: {}", response.body!!.string())
-                    }
-
-                    response.closeQuietly()
-                }
-            })
+            success { it.closeQuietly() }
         }
     }
 
     fun createDMChannel(user: String, name: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val data = JsonObject()
-            data.addProperty("name", name)
+        post(
+            url = "users/${user}/channels",
+            body = { JsonObject().apply { addProperty("name", name) } }
+        ) {
+            failure { logger.error("Failed to send request to create DM channel $user", it) }
 
-            val request = Request.Builder()
-                .url("${instance}/users/${user}/channels")
-                .header("Authorization", "Bearer $token")
-                .post(data.toRequestBody())
-                .build()
+            bad { logger.error("Failed to create DM channel: {}", it.body.string()) }
 
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request to create DM channel $user", e)
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to create DM channel: {}", response.body!!.string())
-
-                        return
-                    }
-
-                    println(response.body!!.string())
-                }
-            })
+            success { it.closeQuietly() }
         }
-
     }
 
     fun addFriend(user: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val data = JsonObject()
-            data.addProperty("type", "pending")
-
-            val request = Request.Builder()
-                .url("${instance}/users/${user}/relationship")
-                .header("Authorization", "Bearer $token")
-                .post(data.toRequestBody())
-                .build()
-
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request to add friend for $user", e)
+        post(
+            url = "users/${user}/relationship",
+            body = {
+                JsonObject().apply {
+                    addProperty("type", "pending")
                 }
+            }
+        ) {
+            failure { logger.error("Failed to send request to add friend for $user", it) }
 
-                override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to add friend: {}", response.body!!.string())
-                    }
+            bad { logger.error("Failed to add friend: {}", it.body.string()) }
 
-                    response.closeQuietly()
-                }
-            })
+            success { it.closeQuietly() }
         }
     }
 
     fun acceptRelationship(user: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val request = Request.Builder()
-                .url("${instance}/users/${user}/relationship")
-                .header("Authorization", "Bearer $token")
-                .post(FormBody.Builder().build())
-                .build()
+        post(
+            url = "users/${user}/relationship",
+            body = { RequestBody.EMPTY }
+        ) {
+            failure { logger.error("Failed to send request to accept relationship for $user", it) }
 
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request to accept relationship for $user", e)
-                }
+            bad { logger.error("Failed to accept relationship: {}", it.body.string()) }
 
-                override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to accept relationship: {}", response.body!!.string())
-                    }
-
-                    response.closeQuietly()
-                }
-            })
+            success { it.closeQuietly() }
         }
     }
 
     fun removeRelationship(user: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val request = Request.Builder()
-                .url("${instance}/users/${user}/relationship")
-                .header("Authorization", "Bearer $token")
-                .delete()
-                .build()
+        delete("users/${user}/relationship") {
+            failure { logger.error("Failed to send request to remove relationship for $user", it) }
 
-            httpClient.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    logger.error("Failed to send request to remove relationship for $user", e)
-                }
+            bad { logger.error("Failed to remove relationship: {}", it.body.string()) }
 
-                override fun onResponse(call: Call, response: Response) {
-                    if (!response.isSuccessful) {
-                        logger.error("Failed to remove relationship: {}", response.body!!.string())
-                    }
-
-                    response.closeQuietly()
-                }
-            })
+            success { it.closeQuietly() }
         }
     }
 }
