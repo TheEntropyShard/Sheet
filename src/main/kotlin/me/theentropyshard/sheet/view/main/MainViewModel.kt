@@ -39,6 +39,7 @@ import me.theentropyshard.sheet.model.Channel
 import me.theentropyshard.sheet.model.Message
 import me.theentropyshard.sheet.model.event.GatewayEvent
 import me.theentropyshard.sheet.model.event.HeartbeatEvent
+import me.theentropyshard.sheet.model.event.IdentifyEvent
 import me.theentropyshard.sheet.model.toChannel
 import me.theentropyshard.sheet.model.toMessage
 import me.theentropyshard.sheet.toRequestBody
@@ -48,6 +49,8 @@ import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.util.*
 
+private val logger = LogManager.getLogger()
+
 enum class CurrentView {
     Friends,
     Private,
@@ -55,11 +58,16 @@ enum class CurrentView {
 }
 
 fun WebSocket.send(payload: GatewayEvent) {
-    this.send(gson.toJson(payload))
+    val text = gson.toJson(payload)
+
+    logger.info("C -> S: $text")
+    println("C -> S: $text")
+
+    this.send(text)
 }
 
 class MainViewModel : ViewModel() {
-    private val logger = LogManager.getLogger()
+
 
     private val _isLoadingInitial = MutableStateFlow(true)
     val isLoadingInitial = _isLoadingInitial.asStateFlow()
@@ -91,9 +99,7 @@ class MainViewModel : ViewModel() {
         Timer(true).schedule(
             object : TimerTask() {
                 override fun run() {
-                    val msg = gson.toJson(HeartbeatEvent(sequence))
-                    webSocket.send(msg)
-                    logger.info("Sent heartbeat: {}", msg)
+                    webSocket.send(HeartbeatEvent(sequence))
                 }
             }, 0, 4500L
         )
@@ -102,27 +108,21 @@ class MainViewModel : ViewModel() {
     fun createWebSocket() {
         val listener = object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
-                val message = JsonObject()
-                message.addProperty("t", "identify")
-                message.addProperty("token", token)
-
-                val msg = gson.toJson(message)
-                webSocket.send(msg)
-                logger.info("Sent identify: {}", msg)
+                webSocket.send(IdentifyEvent(token))
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
                 val seq = sequence++
 
-                logger.info("Received message: {}", text)
-                val message = gson.fromJson(text, JsonObject::class)
+                logger.info("S -> C: $text")
+                println("S -> C: $text")
 
-                //if (message["t"].asString != "HEARTBEAT_ACK") {
-                println(message)
-                //}
+                val message = gson.fromJson(text, JsonObject::class)
 
                 when (message["t"].asString) {
                     "READY" -> {
+                        startHeartbeat()
+
                         val guildsArray = message["d"].asJsonObject["guilds"].asJsonArray
 
                         for (guildElement in guildsArray) {
@@ -138,10 +138,6 @@ class MainViewModel : ViewModel() {
                             }
                         }
 
-                        viewModelScope.launch {
-                            selectGuild(guilds[0].mention)
-                        }
-
                         val relationshipsArray = message["d"].asJsonObject["relationships"].asJsonArray
 
                         for (relationshipElement in relationshipsArray) {
@@ -153,8 +149,6 @@ class MainViewModel : ViewModel() {
                         for (channelElement in channelsArray) {
                             privateChannels += gson.fromJson(channelElement, PrivateDmChannel::class)
                         }
-
-                        startHeartbeat()
 
                         _isLoadingInitial.update { false }
                     }
