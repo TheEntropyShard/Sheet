@@ -26,7 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.AwtWindow
+import androidx.compose.ui.awt.AwtWindow
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
@@ -104,13 +104,13 @@ fun Any.toRequestBody(): RequestBody {
 private fun Sheet() {
     val navController = rememberNavController()
 
-    val loginViewModel: LoginViewModel = viewModel()
+    val loginViewModel: LoginViewModel = viewModel { LoginViewModel() }
     val isLoggedIn by loginViewModel.isLoggedIn.collectAsState()
 
-    val registerViewModel: RegisterViewModel = viewModel()
+    val registerViewModel: RegisterViewModel = viewModel { RegisterViewModel() }
     val isRegistered by registerViewModel.isRegistered.collectAsState()
 
-    val mainViewModel: MainViewModel = viewModel()
+    val mainViewModel: MainViewModel = viewModel { MainViewModel() }
 
     LaunchedEffect(isLoggedIn, isRegistered) {
         if (isLoggedIn || isRegistered) {

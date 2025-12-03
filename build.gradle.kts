@@ -20,11 +20,11 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
-    implementation(compose.material3)
-    implementation(compose.materialIconsExtended)
-    implementation(compose.components.resources)
+    implementation("org.jetbrains.compose.material3:material3:1.9.0")
+    implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+    implementation("org.jetbrains.compose.components:components-resources:1.10.0-rc01")
     implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
-    implementation("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
+    implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.0-beta03")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing")
     implementation("media.kamel:kamel-image-default:1.0.6")
 
