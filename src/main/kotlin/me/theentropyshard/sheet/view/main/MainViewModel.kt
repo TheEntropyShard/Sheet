@@ -489,10 +489,10 @@ class MainViewModel : ViewModel() {
             bad { logger.error("Failed to load messages: {}", it.body.string()) }
 
             success { response ->
-                val shootMessages: List<PublicMessage> = gson.fromJson(
+                val shootMessages = gson.fromJson(
                     response.body.string(),
-                    object : TypeToken<List<PublicMessage>>() {}.type
-                )
+                    MessagesData::class.java
+                ).messages
 
                 viewModelScope.launch {
                     messages.apply {
