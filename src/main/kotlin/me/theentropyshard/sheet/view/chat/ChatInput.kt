@@ -35,7 +35,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import me.theentropyshard.elysme.ui.theme.Fonts
+import me.theentropyshard.sheet.view.Fonts
 import me.theentropyshard.sheet.view.SimpleTextField
 
 val minHeight = 48.dp

@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.kamel.image.asyncPainterResource
-import me.theentropyshard.elysme.ui.theme.Fonts
+import me.theentropyshard.sheet.view.Fonts
 import me.theentropyshard.sheet.Sheet
 import me.theentropyshard.sheet.model.Message
 import me.theentropyshard.sheet.utils.painterResource

@@ -38,7 +38,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAll
-import me.theentropyshard.elysme.ui.theme.Fonts
+import me.theentropyshard.sheet.view.Fonts
 
 @Composable
 fun ChannelItem(

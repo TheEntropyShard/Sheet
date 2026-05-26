@@ -35,7 +35,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
-import me.theentropyshard.elysme.ui.theme.Fonts
+import me.theentropyshard.sheet.view.Fonts
 
 @Composable
 fun GuildHeader(
