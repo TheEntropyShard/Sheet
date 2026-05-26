@@ -18,13 +18,17 @@
 
 package me.theentropyshard.sheet.view.chat
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import me.theentropyshard.sheet.model.Message
 
@@ -41,7 +45,12 @@ fun ChatView(
     onContextMenuAction: (MessageContextMenuAction, Message) -> Unit,
     onSendMessage: (String) -> Unit
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.background)
+            .padding(12.dp)
+    ) {
         SelectionContainer(
             modifier = Modifier
                 .fillMaxHeight()
@@ -87,7 +96,5 @@ fun ChatView(
         ) {
             onSendMessage(it)
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }

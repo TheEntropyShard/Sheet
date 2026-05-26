@@ -35,6 +35,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import me.theentropyshard.elysme.ui.theme.Fonts
 import me.theentropyshard.sheet.view.SimpleTextField
 
 val minHeight = 48.dp
@@ -106,7 +107,10 @@ fun ChatInput(
             onTextLayout = { result -> height = result.size.height.dp + (result.lineCount * 8).dp },
             value = textState,
             onValueChange = { textState = it },
-            placeholder = { Text("Write a message...") },
+            placeholder = { Text(
+                text = "Write a message...",
+                fontFamily = Fonts.googleSans()
+            ) },
             leadingIcon = {
                 IconButton(
                     modifier = Modifier.pointerHoverIcon(icon = PointerIcon.Hand),

@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import me.theentropyshard.elysme.ui.theme.Fonts
 
 @Composable
 fun GuildHeader(
@@ -59,7 +60,8 @@ fun GuildHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            text = guildName
+            text = guildName,
+            fontFamily = Fonts.googleSans()
         )
 
         Spacer(modifier = Modifier.width(4.dp))

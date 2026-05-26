@@ -18,15 +18,20 @@
 
 package me.theentropyshard.sheet
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.awt.AwtWindow
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
@@ -120,11 +125,12 @@ private fun Sheet() {
     }
 
     SheetTheme { darkTheme ->
-        Surface(
-            color = if (darkTheme) Color.Black else Color.White,
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ) {
+        Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
             NavHost(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.background),
                 navController = navController,
                 startDestination = "login"
             ) {

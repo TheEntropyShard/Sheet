@@ -18,12 +18,15 @@
 
 package me.theentropyshard.sheet.view.guild.list
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
@@ -31,7 +34,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import me.theentropyshard.elysme.ui.theme.Fonts
 import me.theentropyshard.sheet.api.model.PublicGuild
 
 @Composable
@@ -45,7 +50,10 @@ fun GuildList(
     onGuildClick: (String) -> Unit,
 ) {
     LazyColumn(
-        modifier = modifier,
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.background)
+            .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
@@ -63,7 +71,10 @@ fun GuildList(
 
         items(guilds) {
             GuildItem(selected = isGuildSelected(it), onClick = { onGuildClick(it.mention) }) {
-                Text(text = "${it.name[0]}")
+                Text(
+                    text = "${it.name[0]}",
+                    fontFamily = Fonts.googleSans()
+                )
             }
         }
 

@@ -18,13 +18,16 @@
 
 package me.theentropyshard.sheet.view.guild.channel
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 
@@ -50,7 +53,12 @@ fun GuildChannelList(
             }
         }
 
-        Column(modifier = modifier) {
+        Column(
+            modifier = modifier
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.background)
+                .padding(12.dp)
+        ) {
             GuildHeader(
                 guildName = guildName,
                 menuVisible = menuVisible,

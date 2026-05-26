@@ -18,10 +18,12 @@
 
 package me.theentropyshard.sheet.view.main
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -156,9 +158,7 @@ fun MainView(
             CircularProgressIndicator()
         }
     } else {
-        Row(modifier = modifier) {
-            Spacer(modifier = Modifier.width(16.dp))
-
+        Row(modifier = modifier.background(MaterialTheme.colorScheme.secondaryContainer)) {
             GuildList(
                 modifier = Modifier.fillMaxHeight(),
                 guilds = guilds,
@@ -175,7 +175,7 @@ fun MainView(
                 model.selectGuild(it)
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             if (currentGuild != null) {
                 when (currentView) {
@@ -231,7 +231,7 @@ fun MainView(
                 }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             var isFileChooserOpen by remember { mutableStateOf(false) }
             var isAttachmentOpen by remember { mutableStateOf(false) }
@@ -291,14 +291,12 @@ fun MainView(
                 }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             MemberList(
                 modifier = Modifier.fillMaxHeight().width(200.dp),
                 members = members.map { obj -> obj["name"].asString }
             )
-
-            Spacer(modifier = Modifier.width(16.dp))
         }
     }
 }

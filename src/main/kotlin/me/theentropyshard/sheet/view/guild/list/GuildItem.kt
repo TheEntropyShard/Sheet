@@ -49,16 +49,8 @@ fun GuildItem(
         modifier = modifier
             .size(56.dp)
             .clip(RoundedCornerShape(50))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .background(if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer)
             .pointerHoverIcon(icon = PointerIcon.Hand)
-            .drawBehind {
-                if (selected) {
-                    drawCircle(
-                        color = scheme.secondaryContainer,
-                        radius = (size.minDimension - 6) / 2.0f
-                    )
-                }
-            }
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {

@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import me.theentropyshard.elysme.ui.theme.Fonts
 
 @Composable
 fun MemberItem(
@@ -49,7 +50,8 @@ fun MemberItem(
     ) {
         Text(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            text = username
+            text = username,
+            fontFamily = Fonts.googleSans()
         )
     }
 }

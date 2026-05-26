@@ -38,6 +38,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAll
+import me.theentropyshard.elysme.ui.theme.Fonts
 
 @Composable
 fun ChannelItem(
@@ -87,7 +88,8 @@ fun ChannelItem(
 
         Text(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            text = name
+            text = name,
+            fontFamily = Fonts.googleSans()
         )
     }
 }
