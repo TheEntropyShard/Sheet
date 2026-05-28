@@ -39,6 +39,7 @@ fun <E> List<E>.safeIdx(idx: Int): E {
 @Composable
 fun ChatView(
     modifier: Modifier = Modifier,
+    chatName: String,
     state: LazyListState,
     messages: List<Message>,
     onAddAttachmentClick: () -> Unit,
@@ -51,6 +52,11 @@ fun ChatView(
             .background(MaterialTheme.colorScheme.background)
             .padding(12.dp)
     ) {
+        ChatViewHeader(
+            modifier = Modifier.fillMaxWidth(),
+            chatName = chatName
+        )
+
         SelectionContainer(
             modifier = Modifier
                 .fillMaxHeight()

@@ -273,6 +273,7 @@ fun MainView(
 
                     ChatView(
                         modifier = Modifier.fillMaxSize().weight(1f),
+                        chatName = model.currentChannel.value?.name ?: "Select a channel",
                         state = state,
                         messages = channelMessages,
                         onAddAttachmentClick = {
