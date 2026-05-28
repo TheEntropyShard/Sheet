@@ -26,7 +26,8 @@ dependencies {
     implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
     implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.0-beta03")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing")
-    implementation("media.kamel:kamel-image-default:1.0.6")
+    implementation("io.coil-kt.coil3:coil-compose:3.4.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.4.0")
 
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("com.squareup.okhttp3:okhttp:5.3.0")

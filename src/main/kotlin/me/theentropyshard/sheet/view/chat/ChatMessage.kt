@@ -39,12 +39,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.kamel.image.asyncPainterResource
 import me.theentropyshard.sheet.view.Fonts
 import me.theentropyshard.sheet.Sheet
 import me.theentropyshard.sheet.model.Message
 import me.theentropyshard.sheet.utils.painterResource
-import me.theentropyshard.sheet.view.components.NoMaxSizeImage
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -214,6 +212,8 @@ private fun MessageBody(
                     if (attachment.type.startsWith("image/")) {
                         ImageAttachment(
                             name = attachment.name,
+                            width = attachment.width,
+                            height = attachment.height,
                             url = "${Sheet.instance}/channel/${message.channelId}/attachments/${attachment.hash}"
                         ) {
                             // TODO: download image
@@ -228,43 +228,6 @@ private fun MessageBody(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun ImageAttachment(
-    modifier: Modifier = Modifier,
-    name: String,
-    url: String,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = modifier.clickable { onClick() },
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(8.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(if (isSystemInDarkTheme()) Color.Black else Color.White)
-        ) {
-            NoMaxSizeImage(
-                modifier = Modifier.clip(RoundedCornerShape(6.dp)),
-                contentDescription = name,
-                resource = {
-                    asyncPainterResource(data = url)
-                },
-                onLoading = {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                },
-                onFailure = { throwable ->
-                    Text(text = "Error: cannot load the image: ${throwable.toString()}")
-                }
-            )
         }
     }
 }

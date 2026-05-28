@@ -18,7 +18,6 @@
 
 package me.theentropyshard.sheet.model
 
-import me.theentropyshard.sheet.api.model.PublicAttachment
 import me.theentropyshard.sheet.api.model.PublicMessage
 
 data class Message(
@@ -28,7 +27,7 @@ data class Message(
     val published: String,
     val updated: String,
     val text: String?,
-    val attachments: List<PublicAttachment>?,
+    val attachments: List<Attachment>?,
 ) {
     fun hasText(): Boolean {
         return this.text != null && this.text.isNotEmpty()
@@ -52,6 +51,6 @@ fun PublicMessage.toMessage(): Message {
         published = this.published,
         updated = this.updated,
         text = this.content,
-        attachments = this.files
+        attachments = this.files.map { it.toAttachment() }
     )
 }
