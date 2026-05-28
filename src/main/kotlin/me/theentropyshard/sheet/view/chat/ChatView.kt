@@ -58,23 +58,24 @@ fun ChatView(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                state = state
+                state = state,
+                reverseLayout = true,
             ) {
                 itemsIndexed(items = messages, key = { _, m -> m.id }) { index, message ->
-                    var sameAuthorPrev = messages.safeIdx(index - 1).authorId == message.authorId
+                    var sameAuthorNext = messages.safeIdx(index - 1).authorId == message.authorId
 
                     if (index - 1 < 0) {
-                        sameAuthorPrev = false
-                    }
-
-                    var sameAuthorNext = messages.safeIdx(index + 1).authorId == message.authorId
-
-                    if (index + 1 >= messages.size) {
                         sameAuthorNext = false
                     }
 
+                    var sameAuthorPrev = messages.safeIdx(index + 1).authorId == message.authorId
+
+                    if (index + 1 >= messages.size) {
+                        sameAuthorPrev = false
+                    }
+
                     if (index != 0) {
-                        Spacer(modifier = modifier.height(if (sameAuthorPrev) 0.dp else 16.dp))
+                        Spacer(modifier = modifier.height(if (sameAuthorNext) 0.dp else 16.dp))
                     }
 
                     ChatMessage(

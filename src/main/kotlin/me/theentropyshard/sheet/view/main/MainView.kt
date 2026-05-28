@@ -82,10 +82,8 @@ fun MainView(
     var channelForDeletion by remember { mutableStateOf<PublicGuildTextChannel?>(null) }
 
     LaunchedEffect(messages.size) {
-        scope.launch {
-            if (messages.isNotEmpty()) {
-                state.animateScrollToItem(messages.size - 1)
-            }
+        if (messages.isNotEmpty()) {
+            state.animateScrollToItem(0)
         }
     }
 
@@ -250,8 +248,7 @@ fun MainView(
                         ChatView(
                             modifier = Modifier.fillMaxSize().weight(1f),
                             state = state,
-                            messages = messages.filter { message -> message.channelId == currentChannel?.mention }
-                                .reversed(),
+                            messages = messages.filter { message -> message.channelId == currentChannel?.mention },
                             onAddAttachmentClick = {
                                 isFileChooserOpen = true
                             },
