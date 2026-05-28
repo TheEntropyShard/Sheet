@@ -19,12 +19,14 @@
 package me.theentropyshard.sheet.model
 
 import me.theentropyshard.sheet.api.model.PublicMessage
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 data class Message(
     val id: String,
     val authorId: String,
     val channelId: String,
-    val published: String,
+    val published: ZonedDateTime,
     val updated: String,
     val text: String?,
     val attachments: List<Attachment>?,
@@ -48,7 +50,7 @@ fun PublicMessage.toMessage(): Message {
         id = this.id,
         authorId = this.authorId,
         channelId = this.channelId,
-        published = this.published,
+        published = ZonedDateTime.parse(this.published).withZoneSameInstant(ZoneOffset.systemDefault()),
         updated = this.updated,
         text = this.content,
         attachments = this.files.map { it.toAttachment() }

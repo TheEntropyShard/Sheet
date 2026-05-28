@@ -112,11 +112,7 @@ fun ChatMessage(
             if (!sameAuthorPrev) {
                 MessageHeader(
                     authorName = message.authorId.substringBefore('@'),
-                    date = formatter.format(
-                        ZonedDateTime
-                            .parse(message.published)
-                            .withZoneSameInstant(ZoneOffset.systemDefault())
-                    )
+                    date = formatter.format(message.published)
                 )
             }
 
