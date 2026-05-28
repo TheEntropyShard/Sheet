@@ -63,6 +63,7 @@ fun PlatformImage(
     contentDescription: String?,
     modifier: Modifier,
     contentScale: ContentScale = ContentScale.Fit,
+    onLoading: @Composable () -> Unit = {},
     onError: @Composable (t: Throwable?) -> Unit = {},
 ) {
     val context = LocalPlatformContext.current
@@ -82,18 +83,16 @@ fun PlatformImage(
     }
 
     when (imageResult) {
-        is SuccessResult -> {
-            Image(
-                imagePainter ?: ColorPainter(Color.Unspecified),
-                contentDescription,
-                modifier,
-                contentScale = contentScale
-            )
-        }
+        is SuccessResult -> Image(
+            modifier = modifier,
+            painter = imagePainter ?: ColorPainter(Color.Unspecified),
+            contentDescription = contentDescription,
+            contentScale = contentScale
+        )
 
         is ErrorResult -> onError((imageResult as ErrorResult).throwable)
 
-        null -> onError(null)
+        null -> onLoading()
     }
 }
 

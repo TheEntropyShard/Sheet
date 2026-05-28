@@ -90,6 +90,11 @@ fun ImageAttachment(
             model = url,
             contentDescription = name,
             contentScale = contentScale,
+            onLoading = {
+                Box(contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            },
             onError = {
                 val message = it?.message
 
