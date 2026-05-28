@@ -21,9 +21,7 @@ package me.theentropyshard.sheet.view.main
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -31,18 +29,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.awtClipboard
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import me.theentropyshard.sheet.FileDialog
 import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
 import me.theentropyshard.sheet.view.chat.ChatView
 import me.theentropyshard.sheet.view.chat.MessageContextMenuAction
 import me.theentropyshard.sheet.view.chat.attachment.AttachmentDialog
+import me.theentropyshard.sheet.view.chat.isAtBottom
+import me.theentropyshard.sheet.view.chat.reachedTop
 import me.theentropyshard.sheet.view.dialog.ConfirmDialog
 import me.theentropyshard.sheet.view.dialog.InputDialog
 import me.theentropyshard.sheet.view.friends.FriendsView
 import me.theentropyshard.sheet.view.friends.PrivateChannelList
-import me.theentropyshard.sheet.view.guild.channel.GuildChannelList
 import me.theentropyshard.sheet.view.guild.channel.ChannelMenuItemAction
+import me.theentropyshard.sheet.view.guild.channel.GuildChannelList
 import me.theentropyshard.sheet.view.guild.channel.GuildMenuItemAction
 import me.theentropyshard.sheet.view.guild.dialog.JoinOrCreateGuildDialog
 import me.theentropyshard.sheet.view.guild.invite.CreateInviteDialog
@@ -67,7 +66,6 @@ fun MainView(
 
     val currentView by model.currentView.collectAsState()
 
-    val scope = rememberCoroutineScope()
     val state = rememberLazyListState()
     val clipboard = LocalClipboard.current
 
@@ -81,8 +79,18 @@ fun MainView(
     var channelForRename by remember { mutableStateOf<PublicGuildTextChannel?>(null) }
     var channelForDeletion by remember { mutableStateOf<PublicGuildTextChannel?>(null) }
 
+    var shouldScroll by remember { mutableStateOf(false) }
+
+    val atBottom by remember {
+        derivedStateOf {
+            state.isAtBottom()
+        }
+    }
+
+    shouldScroll = atBottom
+
     LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) {
+        if (messages.isNotEmpty() && shouldScroll) {
             state.animateScrollToItem(0)
         }
     }
@@ -244,32 +252,49 @@ fun MainView(
                 }
 
                 CurrentView.Guild, CurrentView.Private -> {
-                    key(currentChannel) {
-                        ChatView(
-                            modifier = Modifier.fillMaxSize().weight(1f),
-                            state = state,
-                            messages = messages.filter { message -> message.channelId == currentChannel?.mention },
-                            onAddAttachmentClick = {
-                                isFileChooserOpen = true
-                            },
-                            onContextMenuAction = { action, message ->
-                                when (action) {
-                                    MessageContextMenuAction.Edit -> {}
-                                    MessageContextMenuAction.Forward -> {}
-                                    MessageContextMenuAction.CopyText -> {
-                                        clipboard.awtClipboard!!.setContents(
-                                            StringSelection(message.text), null
-                                        )
-                                    }
+                    val channelMessages = messages.filter { message -> message.channelId == currentChannel?.mention }
 
-                                    MessageContextMenuAction.Delete -> {
-                                        model.deleteMessage(currentChannel!!.mention, message.id)
-                                    }
+                    println(channelMessages.size)
+
+                    val reachedTop by remember {
+                        derivedStateOf {
+                            state.reachedTop()
+                        }
+                    }
+
+                    LaunchedEffect(reachedTop) {
+                        if (reachedTop && channelMessages.isNotEmpty()) {
+                            model.loadMessages(
+                                model.currentChannel.value!!.mention,
+                                model.lastMessageIds[model.currentChannel.value!!.mention] ?: ""
+                            )
+                        }
+                    }
+
+                    ChatView(
+                        modifier = Modifier.fillMaxSize().weight(1f),
+                        state = state,
+                        messages = channelMessages,
+                        onAddAttachmentClick = {
+                            isFileChooserOpen = true
+                        },
+                        onContextMenuAction = { action, message ->
+                            when (action) {
+                                MessageContextMenuAction.Edit -> {}
+                                MessageContextMenuAction.Forward -> {}
+                                MessageContextMenuAction.CopyText -> {
+                                    clipboard.awtClipboard!!.setContents(
+                                        StringSelection(message.text), null
+                                    )
+                                }
+
+                                MessageContextMenuAction.Delete -> {
+                                    model.deleteMessage(currentChannel!!.mention, message.id)
                                 }
                             }
-                        ) { message ->
-                            model.sendMessage(message)
                         }
+                    ) { message ->
+                        model.sendMessage(message)
                     }
                 }
             }

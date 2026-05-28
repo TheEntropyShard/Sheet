@@ -99,3 +99,31 @@ fun ChatView(
         }
     }
 }
+
+fun LazyListState.isAtBottom(): Boolean {
+    return if (layoutInfo.totalItemsCount == 0) {
+        false
+    } else {
+        val firstVisibleItem = layoutInfo.visibleItemsInfo.first()
+        val viewportHeight = layoutInfo.viewportEndOffset + layoutInfo.viewportStartOffset
+
+        // Check if the first visible item is the first item in the list and fully visible
+        // This indicates that the user has scrolled to the bottom
+
+        firstVisibleItem.index == 0 && firstVisibleItem.offset + firstVisibleItem.size <= viewportHeight
+    }
+}
+
+fun LazyListState.reachedTop(): Boolean {
+    return if (layoutInfo.totalItemsCount == 0) {
+        false
+    } else {
+        val lastVisibleItem = layoutInfo.visibleItemsInfo.last()
+        val viewportHeight = layoutInfo.viewportEndOffset + layoutInfo.viewportStartOffset
+
+        // Check if the last visible item is the last item in the list and fully visible
+        // This indicates that the user has scrolled to the top
+        (lastVisibleItem.index + 1 == layoutInfo.totalItemsCount &&
+                lastVisibleItem.offset - lastVisibleItem.size <= viewportHeight)
+    }
+}

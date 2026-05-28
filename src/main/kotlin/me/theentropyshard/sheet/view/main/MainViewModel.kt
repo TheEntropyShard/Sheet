@@ -22,7 +22,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.JsonObject
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -87,6 +86,7 @@ class MainViewModel : ViewModel() {
     val members = mutableStateListOf<JsonObject>()
     val relationships = mutableStateListOf<PrivateRelationship>()
     val privateChannels = mutableStateListOf<PrivateDmChannel>()
+    val lastMessageIds = Collections.synchronizedMap(mutableMapOf<String, String>())
 
     private var sequence: Int = 0
     private var reconnectAttempts: Int = 0
@@ -482,8 +482,12 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun loadMessages(channelId: String, replace: Boolean = false) {
-        get("channel/$channelId/messages") {
+    fun loadMessages(channelId: String, before: String = "", replace: Boolean = false) {
+        var url = "channel/$channelId/messages"
+
+        if (before.isNotEmpty()) url += "?before=$before"
+
+        get(url) {
             failure { logger.error("Failed to send request to load messages", it) }
 
             bad { logger.error("Failed to load messages: {}", it.body.string()) }
@@ -494,13 +498,17 @@ class MainViewModel : ViewModel() {
                     MessagesData::class.java
                 ).messages
 
-                viewModelScope.launch {
-                    messages.apply {
-                        if (replace) {
-                            clear()
-                        }
+                if (shootMessages.isNotEmpty()) {
+                    lastMessageIds[channelId] = shootMessages.last().id
 
-                        shootMessages.forEach { this += it.toMessage() }
+                    viewModelScope.launch {
+                        messages.apply {
+                            if (replace) {
+                                clear()
+                            }
+
+                            shootMessages.forEach { this += it.toMessage() }
+                        }
                     }
                 }
             }
