@@ -48,8 +48,6 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss")
-private val pingColor = Color(0xFFFAD6A5)
-private val pingColorHover = Color(0xFFD1A364)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -80,9 +78,7 @@ fun ChatMessage(
         modifier = modifier
             .background(
                 when {
-                    message.isPing(Sheet.user.name) && isHovered -> pingColorHover
-                    message.isPing(Sheet.user.name) -> pingColor
-                    isHovered || menuVisible -> MaterialTheme.colorScheme.surface
+                    isHovered || menuVisible -> MaterialTheme.colorScheme.secondaryFixed
                     else -> Color.Unspecified
                 }
             )

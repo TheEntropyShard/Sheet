@@ -38,11 +38,6 @@ data class Message(
     fun hasAttachments(): Boolean {
         return this.attachments != null && this.attachments.isNotEmpty()
     }
-
-    // this is not an official way to do mentions
-    fun isPing(user: String): Boolean {
-        return this.text != null && this.text.startsWith("$user: ")
-    }
 }
 
 fun PublicMessage.toMessage(): Message {
