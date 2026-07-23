@@ -47,7 +47,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss")
+private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm")
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -76,12 +76,7 @@ fun ChatMessage(
 
     Row(
         modifier = modifier
-            .background(
-                when {
-                    isHovered || menuVisible -> MaterialTheme.colorScheme.secondaryFixed
-                    else -> Color.Unspecified
-                }
-            )
+            .indication(source, LocalIndication.current)
             .hoverable(source)
             .padding(padding)
             .pointerInput(Unit) {
@@ -135,7 +130,7 @@ fun ChatMessage(
 }
 
 @Composable
-private fun Avatar(
+fun Avatar(
     modifier: Modifier = Modifier
 ) {
     Box(

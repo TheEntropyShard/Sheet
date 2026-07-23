@@ -61,6 +61,8 @@ import java.awt.Frame
 import java.io.File
 import kotlin.reflect.KClass
 
+val TopBarHeight = 56.dp
+
 object Sheet {
     val httpClient = OkHttpClient()
     val gson: Gson = GsonBuilder()
@@ -124,12 +126,10 @@ private fun Sheet() {
         }
     }
 
-    SheetTheme { darkTheme ->
-        Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
+    SheetTheme(false) { darkTheme ->
+        Surface {
             NavHost(
                 modifier = Modifier
-                    .padding(12.dp)
-                    .clip(RoundedCornerShape(12.dp))
                     .background(MaterialTheme.colorScheme.background),
                 navController = navController,
                 startDestination = "login"

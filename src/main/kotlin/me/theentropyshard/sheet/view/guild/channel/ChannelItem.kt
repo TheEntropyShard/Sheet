@@ -22,6 +22,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -35,10 +36,15 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAll
+import me.theentropyshard.sheet.generated.resources.Res
+import me.theentropyshard.sheet.generated.resources.tag_24dp
+import me.theentropyshard.sheet.utils.painterResource
 import me.theentropyshard.sheet.view.Fonts
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun ChannelItem(
@@ -48,26 +54,14 @@ fun ChannelItem(
     onMenuItemClick: (ChannelMenuItemAction) -> Unit,
     onClick: () -> Unit
 ) {
-    val scheme = MaterialTheme.colorScheme
-
     var menuShown by remember { mutableStateOf(false) }
 
-    Box(
+    Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Unspecified)
             .fillMaxWidth()
             .pointerHoverIcon(icon = PointerIcon.Hand)
-            .drawBehind {
-                if (selected) {
-                    drawRoundRect(
-                        color = scheme.secondaryContainer,
-                        topLeft = Offset(3.dp.toPx(), 3.dp.toPx()),
-                        size = Size(size.width - 6.dp.toPx(), size.height - 6.dp.toPx()),
-                        cornerRadius = CornerRadius(6.dp.toPx(), 6.dp.toPx()),
-                    )
-                }
-            }
             .clickable { onClick() }
             .pointerInput(Unit) {
                 awaitEachGesture {
@@ -77,14 +71,20 @@ fun ChannelItem(
                         menuShown = true
                     }
                 }
-            },
-        contentAlignment = Alignment.CenterStart
+            }
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         ChannelItemMenu(
             modifier = Modifier.width(200.dp),
             visible = menuShown,
             onDismissRequest = { menuShown = false }
         ) { onMenuItemClick(it) }
+
+        Icon(
+            painter = painterResource(Res.drawable.tag_24dp),
+            contentDescription = null
+        )
 
         Text(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),

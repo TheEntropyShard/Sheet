@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import me.theentropyshard.sheet.TopBarHeight
 import me.theentropyshard.sheet.view.Fonts
 
 @Composable
@@ -49,11 +50,11 @@ fun GuildHeader(
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .fillMaxWidth()
             .pointerHoverIcon(icon = PointerIcon.Hand)
             .clickable { onClick() }
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 8.dp)
+            .height(TopBarHeight),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(

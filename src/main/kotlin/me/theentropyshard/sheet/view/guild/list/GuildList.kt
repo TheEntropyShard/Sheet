@@ -21,7 +21,10 @@ package me.theentropyshard.sheet.view.guild.list
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,46 +52,42 @@ fun GuildList(
     onAddGuildClick: () -> Unit,
     onGuildClick: (String) -> Unit,
 ) {
-    LazyColumn(
+    Column(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.background)
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(12.dp)
+            .background(MaterialTheme.colorScheme.background),
     ) {
-        item {
-            GuildItem(selected = isMeSelected, onClick = onMeClick) {
-                Icon(
-                    imageVector = Icons.Filled.Person,
-                    contentDescription = "Click to show private chats"
-                )
+        GuildItem(selected = isMeSelected, onClick = onMeClick) {
+            Icon(
+                imageVector = Icons.Filled.Person,
+                contentDescription = "Click to show private chats"
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(guilds, key = { it.mention }) {
+                GuildItem(
+                    selected = isGuildSelected(it),
+                    onClick = { onGuildClick(it.mention) }
+                ) {
+                    Text(
+                        text = "${it.name[0]}",
+                        fontFamily = Fonts.googleSans()
+                    )
+                }
             }
         }
 
-        item {
-            Divider()
-        }
-
-        items(guilds) {
-            GuildItem(selected = isGuildSelected(it), onClick = { onGuildClick(it.mention) }) {
-                Text(
-                    text = "${it.name[0]}",
-                    fontFamily = Fonts.googleSans()
-                )
-            }
-        }
-
-        item {
-            Divider()
-        }
-
-        item {
-            GuildItem(selected = false, onClick = onAddGuildClick) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Click to add a new guild"
-                )
-            }
+        GuildItem(selected = false, onClick = onAddGuildClick) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = "Click to add a new guild"
+            )
         }
     }
 }

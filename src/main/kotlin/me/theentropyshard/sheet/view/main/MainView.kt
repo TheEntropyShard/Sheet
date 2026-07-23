@@ -26,11 +26,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.awtClipboard
 import androidx.compose.ui.unit.dp
 import me.theentropyshard.sheet.FileDialog
 import me.theentropyshard.sheet.api.model.PublicGuildTextChannel
+import me.theentropyshard.sheet.view.UserInfo
 import me.theentropyshard.sheet.view.chat.ChatView
 import me.theentropyshard.sheet.view.chat.MessageContextMenuAction
 import me.theentropyshard.sheet.view.chat.attachment.AttachmentDialog
@@ -47,10 +50,14 @@ import me.theentropyshard.sheet.view.guild.dialog.JoinOrCreateGuildDialog
 import me.theentropyshard.sheet.view.guild.invite.CreateInviteDialog
 import me.theentropyshard.sheet.view.guild.list.GuildList
 import me.theentropyshard.sheet.view.guild.members.MemberList
+import org.jetbrains.compose.splitpane.ExperimentalSplitPaneApi
+import org.jetbrains.compose.splitpane.HorizontalSplitPane
+import org.jetbrains.compose.splitpane.rememberSplitPaneState
+import java.awt.Cursor
 import java.awt.datatransfer.StringSelection
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class, ExperimentalSplitPaneApi::class)
 @Composable
 fun MainView(
     modifier: Modifier = Modifier,
@@ -164,162 +171,203 @@ fun MainView(
             CircularProgressIndicator()
         }
     } else {
-        Row(modifier = modifier.background(MaterialTheme.colorScheme.secondaryContainer)) {
-            GuildList(
-                modifier = Modifier.fillMaxHeight(),
-                guilds = guilds,
-                isGuildSelected = { it.mention == currentGuild?.mention && currentView == CurrentView.Guild },
-                onMeClick = {
-                    model.switchToFriendsView()
-                },
-                isMeSelected = currentView == CurrentView.Friends || currentView == CurrentView.Private,
-                onAddGuildClick = {
-                    createGuildDialogVisible = true
-                }
-            ) {
-                model.switchToGuildView()
-                model.selectGuild(it)
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            if (currentGuild != null) {
-                when (currentView) {
-                    CurrentView.Friends, CurrentView.Private -> {
-                        PrivateChannelList(
-                            modifier = Modifier.fillMaxHeight().width(200.dp),
-                            channels = model.privateChannels,
-                            isChannelSelected = { channel ->
-                                channel.mention == currentChannel?.mention
+        HorizontalSplitPane(
+            modifier = modifier,
+            splitPaneState = rememberSplitPaneState(initialPositionPercentage = 0.25f)
+        ) {
+            first(minSize = 320.dp) {
+                Column {
+                    Row(modifier = Modifier.weight(1f)) {
+                        GuildList(
+                            guilds = guilds,
+                            isGuildSelected = { it.mention == currentGuild?.mention && currentView == CurrentView.Guild },
+                            onMeClick = {
+                                model.switchToFriendsView()
                             },
-                            onChannelMenuItemClick = { action, channel ->
-
+                            isMeSelected = currentView == CurrentView.Friends || currentView == CurrentView.Private,
+                            onAddGuildClick = {
+                                createGuildDialogVisible = true
                             }
                         ) {
-                            model.switchToPrivateView()
-                            model.selectChannel(it)
+                            model.switchToGuildView()
+                            model.selectGuild(it)
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                                .fillMaxHeight()
+                        )
+
+                        when (currentView) {
+                            CurrentView.Friends, CurrentView.Private -> {
+                                PrivateChannelList(
+                                    modifier = Modifier.fillMaxHeight(),
+                                    channels = model.privateChannels,
+                                    isChannelSelected = { channel ->
+                                        channel.mention == currentChannel?.mention
+                                    },
+                                    onChannelMenuItemClick = { action, channel ->
+
+                                    }
+                                ) {
+                                    model.switchToPrivateView()
+                                    model.selectChannel(it)
+                                }
+                            }
+
+                            CurrentView.Guild -> {
+                                if (currentGuild != null) {
+                                    GuildChannelList(
+                                        modifier = Modifier.fillMaxHeight(),
+                                        channels = channels.filter { channel -> channel.guild == currentGuild?.mention },
+                                        isChannelSelected = { channel ->
+                                            channel.mention == currentChannel?.mention
+                                        },
+                                        onGuildMenuAction = { action ->
+                                            when (action) {
+                                                GuildMenuItemAction.CreateChannel -> createChannelDialogVisible = true
+                                                GuildMenuItemAction.CreateInvite -> createInviteDialogVisible = true
+                                                GuildMenuItemAction.DeleteGuild -> deleteGuildDialogVisible = true
+                                            }
+                                        },
+                                        guildName = currentGuild!!.name,
+                                        onChannelMenuItemClick = { action, channel ->
+                                            when (action) {
+                                                ChannelMenuItemAction.Rename -> {
+                                                    channelForRename = channel
+                                                    renameChannelDialogVisible = true
+                                                }
+
+                                                ChannelMenuItemAction.Delete -> {
+                                                    channelForDeletion = channel
+                                                    deleteChannelDialogVisible = true
+                                                }
+                                            }
+                                        },
+                                    ) {
+                                        model.selectChannel(it)
+                                    }
+
+                                }
+                            }
                         }
                     }
 
-                    CurrentView.Guild -> {
-                        GuildChannelList(
-                            modifier = Modifier.fillMaxHeight().width(200.dp),
-                            channels = channels.filter { channel -> channel.guild == currentGuild?.mention },
-                            isChannelSelected = { channel ->
-                                channel.mention == currentChannel?.mention
-                            },
-                            onGuildMenuAction = { action ->
-                                when (action) {
-                                    GuildMenuItemAction.CreateChannel -> createChannelDialogVisible = true
-                                    GuildMenuItemAction.CreateInvite -> createInviteDialogVisible = true
-                                    GuildMenuItemAction.DeleteGuild -> deleteGuildDialogVisible = true
-                                }
-                            },
-                            guildName = currentGuild!!.name,
-                            onChannelMenuItemClick = { action, channel ->
-                                when (action) {
-                                    ChannelMenuItemAction.Rename -> {
-                                        channelForRename = channel
-                                        renameChannelDialogVisible = true
-                                    }
-
-                                    ChannelMenuItemAction.Delete -> {
-                                        channelForDeletion = channel
-                                        deleteChannelDialogVisible = true
-                                    }
-                                }
-                            },
-                        ) {
-                            model.selectChannel(it)
-                        }
-
-                    }
+                    UserInfo(modifier = Modifier.fillMaxWidth())
                 }
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            second(minSize = 512.dp) {
+                Row {
+                    var isFileChooserOpen by remember { mutableStateOf(false) }
+                    var isAttachmentOpen by remember { mutableStateOf(false) }
+                    var selectedFiles by remember { mutableStateOf(listOf<File>()) }
 
-            var isFileChooserOpen by remember { mutableStateOf(false) }
-            var isAttachmentOpen by remember { mutableStateOf(false) }
-            var selectedFiles by remember { mutableStateOf(listOf<File>()) }
+                    when (currentView) {
+                        CurrentView.Friends -> {
+                            FriendsView(
+                                modifier = Modifier.fillMaxSize().weight(1f),
+                                model = model
+                            )
+                        }
 
-            when (currentView) {
-                CurrentView.Friends -> {
-                    FriendsView(
-                        modifier = Modifier.fillMaxSize().weight(1f),
-                        model = model
+                        CurrentView.Guild, CurrentView.Private -> {
+                            val channelMessages =
+                                messages.filter { message -> message.channelId == currentChannel?.mention }
+
+                            println(channelMessages.size)
+
+                            val reachedTop by remember {
+                                derivedStateOf {
+                                    state.reachedTop()
+                                }
+                            }
+
+                            LaunchedEffect(reachedTop) {
+                                if (reachedTop && channelMessages.isNotEmpty()) {
+                                    model.loadMessages(
+                                        model.currentChannel.value!!.mention,
+                                        model.lastMessageIds[model.currentChannel.value!!.mention] ?: ""
+                                    )
+                                }
+                            }
+
+                            ChatView(
+                                modifier = Modifier.fillMaxSize().weight(1f),
+                                chatName = model.currentChannel.value?.name ?: "Select a channel",
+                                state = state,
+                                messages = channelMessages,
+                                onAddAttachmentClick = {
+                                    isFileChooserOpen = true
+                                },
+                                onContextMenuAction = { action, message ->
+                                    when (action) {
+                                        MessageContextMenuAction.Edit -> {}
+                                        MessageContextMenuAction.Forward -> {}
+                                        MessageContextMenuAction.CopyText -> {
+                                            clipboard.awtClipboard!!.setContents(
+                                                StringSelection(message.text), null
+                                            )
+                                        }
+
+                                        MessageContextMenuAction.Delete -> {
+                                            model.deleteMessage(currentChannel!!.mention, message.id)
+                                        }
+                                    }
+                                }
+                            ) { message ->
+                                model.sendMessage(message)
+                            }
+                        }
+                    }
+
+                    if (isFileChooserOpen) {
+                        FileDialog { files ->
+                            isFileChooserOpen = false
+                            isAttachmentOpen = true
+                            selectedFiles = files
+                        }
+                    }
+
+                    if (isAttachmentOpen) {
+                        AttachmentDialog(currentChannel!!.mention, selectedFiles = selectedFiles) {
+                            isAttachmentOpen = false
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    MemberList(
+                        modifier = Modifier.fillMaxHeight().width(250.dp),
+                        members = members.map { obj -> obj["name"].asString }
+                    )
+                }
+            }
+
+            splitter {
+                visiblePart {
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                            .fillMaxHeight()
                     )
                 }
 
-                CurrentView.Guild, CurrentView.Private -> {
-                    val channelMessages = messages.filter { message -> message.channelId == currentChannel?.mention }
-
-                    println(channelMessages.size)
-
-                    val reachedTop by remember {
-                        derivedStateOf {
-                            state.reachedTop()
-                        }
-                    }
-
-                    LaunchedEffect(reachedTop) {
-                        if (reachedTop && channelMessages.isNotEmpty()) {
-                            model.loadMessages(
-                                model.currentChannel.value!!.mention,
-                                model.lastMessageIds[model.currentChannel.value!!.mention] ?: ""
-                            )
-                        }
-                    }
-
-                    ChatView(
-                        modifier = Modifier.fillMaxSize().weight(1f),
-                        chatName = model.currentChannel.value?.name ?: "Select a channel",
-                        state = state,
-                        messages = channelMessages,
-                        onAddAttachmentClick = {
-                            isFileChooserOpen = true
-                        },
-                        onContextMenuAction = { action, message ->
-                            when (action) {
-                                MessageContextMenuAction.Edit -> {}
-                                MessageContextMenuAction.Forward -> {}
-                                MessageContextMenuAction.CopyText -> {
-                                    clipboard.awtClipboard!!.setContents(
-                                        StringSelection(message.text), null
-                                    )
-                                }
-
-                                MessageContextMenuAction.Delete -> {
-                                    model.deleteMessage(currentChannel!!.mention, message.id)
-                                }
-                            }
-                        }
-                    ) { message ->
-                        model.sendMessage(message)
-                    }
+                handle {
+                    Box(
+                        Modifier
+                            .markAsHandle()
+                            .cursorForHorizontalResize()
+                            .width(3.dp)
+                            .fillMaxHeight()
+                    )
                 }
             }
-
-            if (isFileChooserOpen) {
-                FileDialog { files ->
-                    isFileChooserOpen = false
-                    isAttachmentOpen = true
-                    selectedFiles = files
-                }
-            }
-
-            if (isAttachmentOpen) {
-                AttachmentDialog(currentChannel!!.mention, selectedFiles = selectedFiles) {
-                    isAttachmentOpen = false
-                }
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            MemberList(
-                modifier = Modifier.fillMaxHeight().width(200.dp),
-                members = members.map { obj -> obj["name"].asString }
-            )
         }
     }
 }
+
+fun Modifier.cursorForHorizontalResize(): Modifier = pointerHoverIcon(PointerIcon(Cursor(Cursor.E_RESIZE_CURSOR)))

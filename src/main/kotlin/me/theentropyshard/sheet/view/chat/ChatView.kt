@@ -48,14 +48,18 @@ fun ChatView(
     onSendMessage: (String) -> Unit
 ) {
     Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.background)
-            .padding(12.dp)
+        modifier = modifier.background(MaterialTheme.colorScheme.background)
     ) {
         ChatViewHeader(
             modifier = Modifier.fillMaxWidth(),
             chatName = chatName
+        )
+
+        Box(
+            modifier = Modifier
+                .height(1.dp)
+                .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                .fillMaxWidth()
         )
 
         SelectionContainer(
@@ -103,7 +107,12 @@ fun ChatView(
         Spacer(modifier = Modifier.height(16.dp))
 
         ChatInput(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .padding(12.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.secondaryContainer)
+                .padding(6.dp)
+                .fillMaxWidth(),
             onAddAttachmentClick = onAddAttachmentClick
         ) {
             onSendMessage(it)

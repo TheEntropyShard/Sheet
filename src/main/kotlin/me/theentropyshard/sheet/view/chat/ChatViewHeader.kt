@@ -18,18 +18,16 @@
 
 package me.theentropyshard.sheet.view.chat
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import me.theentropyshard.sheet.TopBarHeight
 import me.theentropyshard.sheet.generated.resources.Res
 import me.theentropyshard.sheet.generated.resources.group_24dp
 import me.theentropyshard.sheet.view.Fonts
@@ -40,29 +38,26 @@ fun ChatViewHeader(
     modifier: Modifier = Modifier,
     chatName: String
 ) {
-    CompositionLocalProvider(LocalContentColor provides contentColorFor(MaterialTheme.colorScheme.secondaryContainer)) {
-        Row(
-            modifier = modifier
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.secondaryContainer)
-                .padding(start = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+    Row(
+        modifier = modifier
+            .height(TopBarHeight)
+            .padding(start = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = chatName,
+            fontFamily = Fonts.googleSans()
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        IconButton(
+            onClick = {}
         ) {
-            Text(
-                text = chatName,
-                fontFamily = Fonts.googleSans()
+            Icon(
+                painter = painterResource(Res.drawable.group_24dp),
+                contentDescription = ""
             )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            IconButton(
-                onClick = {}
-            ) {
-                Icon(
-                    painter = painterResource(Res.drawable.group_24dp),
-                    contentDescription = ""
-                )
-            }
         }
     }
 }

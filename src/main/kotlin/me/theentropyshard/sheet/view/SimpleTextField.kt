@@ -74,8 +74,7 @@ fun SimpleTextField(
 ) {
     BasicTextField(
         modifier = modifier
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surface),
+            .clip(shape),
         value = value,
         onValueChange = onValueChange,
         singleLine = singleLine,

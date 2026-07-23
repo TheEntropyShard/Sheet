@@ -20,11 +20,14 @@ package me.theentropyshard.sheet.view.guild.members
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import me.theentropyshard.sheet.TopBarHeight
 import me.theentropyshard.sheet.view.Fonts
 
 @Composable
@@ -44,16 +48,21 @@ fun MemberList(
 ) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.background)
-            .padding(12.dp)
+            .padding(horizontal = 12.dp)
     ) {
         Text(
+            modifier = Modifier.height(TopBarHeight),
             text = if (members.size == 1) "1 member" else "${members.size} members",
             fontFamily = Fonts.googleSans()
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Box(
+            modifier = Modifier
+                .height(1.dp)
+                .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                .fillMaxWidth()
+        )
 
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
@@ -64,7 +73,7 @@ fun MemberList(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             items(members) {
                 MemberItem(username = it)

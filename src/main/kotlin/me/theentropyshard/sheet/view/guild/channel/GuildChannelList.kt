@@ -54,8 +54,7 @@ fun GuildChannelList(
         }
 
         Column(
-            modifier = modifier
-                .clip(RoundedCornerShape(12.dp))
+            modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
                 .padding(12.dp)
         ) {
@@ -65,18 +64,17 @@ fun GuildChannelList(
                 onClick = { menuVisible = true }
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            HorizontalDivider(
-                modifier = Modifier.fillMaxWidth(),
-                thickness = 2.dp,
-                color = MaterialTheme.colorScheme.surfaceContainer
+            Box(
+                modifier = Modifier
+                    .height(1.dp)
+                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                    .fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 items(items = channels) {
                     ChannelItem(

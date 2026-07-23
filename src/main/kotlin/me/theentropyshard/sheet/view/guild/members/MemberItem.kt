@@ -18,11 +18,14 @@
 
 package me.theentropyshard.sheet.view.guild.members
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -31,26 +34,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.theentropyshard.sheet.view.Fonts
+import me.theentropyshard.sheet.view.chat.Avatar
 
 @Composable
 fun MemberItem(
     modifier: Modifier = Modifier,
     username: String
 ) {
-    Box(
+    Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .fillMaxWidth()
             .pointerHoverIcon(icon = PointerIcon.Hand)
-            .clickable {},
-        contentAlignment = Alignment.CenterStart
+            .clickable {}
+            .padding(4.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Avatar()
+
+        Spacer(modifier = Modifier.width(8.dp))
+
         Text(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             text = username,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             fontFamily = Fonts.googleSans()
         )
     }
