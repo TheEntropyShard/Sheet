@@ -26,4 +26,6 @@ public class PublicUser {
     public String summary;
     @SerializedName("display_name")
     public String displayName;
+    public String avatar;
+    public String banner;
 }
