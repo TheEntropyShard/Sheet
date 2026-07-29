@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import me.theentropyshard.sheet.model.Message
+import java.time.temporal.ChronoUnit
 import kotlin.math.abs
 
 fun <E> List<E>.safeIdx(idx: Int): E {
@@ -89,7 +90,7 @@ fun ChatView(
                         Spacer(modifier = modifier.height(if (sameAuthorNext) 0.dp else 16.dp))
                     }
 
-                    if (abs(messages.safeIdx(index + 1).published.minute - message.published.minute) >= 5) {
+                    if (ChronoUnit.MINUTES.between(messages.safeIdx(index + 1).published, message.published) >= 5) {
                         sameAuthorPrev = false
                     }
 
